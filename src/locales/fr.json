@@ -1,0 +1,155 @@
+{
+  "nav": {
+    "home": "Accueil",
+    "shop": "Boutique",
+    "about": "À propos",
+    "contact": "Contact"
+  },
+  "hero": {
+    "title": "Équipements Médicaux de Qualité",
+    "subtitle": "Votre Partenaire de Confiance pour les Solutions de Santé en Algérie",
+    "cta": "Parcourir les Équipements",
+    "contact": "Contactez-nous"
+  },
+  "about": {
+    "title": "À propos de LAGMED",
+    "subtitle": "Qui Sommes-Nous",
+    "description": "Basée à Bordj Bou Arreridj, Algérie, LAGMED est un fournisseur leader d'équipements médicaux de haute qualité. Nous fournissons aux établissements de santé à travers l'Algérie des dispositifs médicaux certifiés et fiables.",
+    "mission": "Notre mission est d'améliorer la qualité des soins de santé en fournissant des équipements médicaux de pointe à des prix compétitifs.",
+    "years": "Années d'Expérience",
+    "products_count": "Produits Disponibles",
+    "clients": "Clients Satisfaits",
+    "support": "Support 24/7"
+  },
+  "why_us": {
+    "title": "Pourquoi Choisir LAGMED ?",
+    "quality": "Qualité Certifiée",
+    "quality_desc": "Tous nos équipements répondent aux normes internationales de qualité et de sécurité.",
+    "delivery": "Livraison Rapide",
+    "delivery_desc": "Service de livraison fiable dans toute l'Algérie.",
+    "support": "Support Expert",
+    "support_desc": "Notre équipe technique assure un support après-vente complet et des formations.",
+    "pricing": "Prix Compétitifs",
+    "pricing_desc": "Meilleurs prix garantis avec des options de paiement flexibles."
+  },
+  "categories": {
+    "title": "Catégories d'Équipements",
+    "subtitle": "Parcourez notre large sélection d'équipements médicaux",
+    "view_all": "Voir Toutes les Catégories"
+  },
+  "best_sellers": {
+    "title": "Équipements les Plus Vendus",
+    "subtitle": "Nos produits les plus vendus, approuvés par les professionnels de santé"
+  },
+  "new_arrivals": {
+    "title": "Nouveautés",
+    "subtitle": "Dernières additions à notre catalogue d'équipements médicaux"
+  },
+  "cta_section": {
+    "title": "Besoin d'Équipements Médicaux ?",
+    "subtitle": "Demandez un devis gratuit et notre équipe vous contactera sous 24 heures.",
+    "button": "Demander un Devis"
+  },
+  "contact": {
+    "title": "Contactez-nous",
+    "subtitle": "Prenez contact avec notre équipe",
+    "address": "Adresse",
+    "phone": "Téléphone",
+    "email": "Email",
+    "form_name": "Nom Complet",
+    "form_email": "Adresse Email",
+    "form_phone": "Numéro de Téléphone",
+    "form_message": "Message",
+    "form_submit": "Envoyer le Message"
+  },
+  "shop": {
+    "title": "Équipements Médicaux",
+    "subtitle": "Parcourez notre catalogue complet d'équipements médicaux",
+    "search": "Rechercher un équipement...",
+    "filters": "Filtres",
+    "sort": "Trier par",
+    "sort_newest": "Plus Récent",
+    "sort_oldest": "Plus Ancien",
+    "sort_name_asc": "Nom A-Z",
+    "sort_name_desc": "Nom Z-A",
+    "all_categories": "Toutes les Catégories",
+    "no_products": "Aucun produit trouvé",
+    "showing": "Affichage de",
+    "of": "sur",
+    "products": "produits"
+  },
+  "product": {
+    "specifications": "Spécifications Techniques",
+    "description": "Description",
+    "certifications": "Certifications",
+    "availability": "Disponibilité",
+    "available": "En Stock",
+    "unavailable": "Rupture de Stock",
+    "download_datasheet": "Télécharger la Fiche Technique",
+    "request_quote": "Demander un Devis",
+    "related": "Produits Similaires",
+    "new": "Nouveau",
+    "best_seller": "Best Seller",
+    "brand": "Marque",
+    "category": "Catégorie"
+  },
+  "quote": {
+    "title": "Demander un Devis",
+    "subtitle": "Remplissez le formulaire ci-dessous et nous vous recontacterons sous 24 heures.",
+    "name": "Nom Complet",
+    "company": "Entreprise (optionnel)",
+    "phone": "Numéro de Téléphone",
+    "email": "Adresse Email",
+    "quantity": "Quantité",
+    "notes": "Notes Supplémentaires",
+    "submit": "Envoyer la Demande",
+    "success_title": "Demande de Devis Envoyée !",
+    "success_message": "Merci pour votre demande. Notre équipe vous contactera sous 24 heures.",
+    "for_product": "Devis pour"
+  },
+  "footer": {
+    "description": "Votre partenaire de confiance pour les équipements médicaux de qualité en Algérie.",
+    "quick_links": "Liens Rapides",
+    "contact_info": "Informations de Contact",
+    "follow_us": "Suivez-nous",
+    "rights": "Tous droits réservés."
+  },
+  "partners": {
+    "title": "Nos Boutiques & Emplacements",
+    "subtitle": "Trouvez-nous à Travers l'Algérie"
+  },
+  "boutiques": {
+    "title": "Nos Boutiques",
+    "subtitle": "Nos Points de Vente",
+    "description": "Visitez nos magasins à travers l'Algérie pour découvrir notre gamme d'équipements médicaux.",
+    "headquarters": "Siège Principal",
+    "directions": "Itinéraire",
+    "call": "Appeler",
+    "hours": "Horaires d'ouverture",
+    "hours_value": "Sam–Jeu: 8h00 – 17h00",
+    "all_stores": "Tous les points de vente"
+  },
+  "testimonials": {
+    "title": "Ce que Disent nos Clients",
+    "subtitle": "La Confiance des Professionnels de Santé",
+    "write_review": "Écrire un Avis",
+    "your_name": "Votre Nom",
+    "your_company": "Entreprise / Hôpital",
+    "your_role": "Votre Poste",
+    "your_review": "Votre Avis",
+    "rating": "Note",
+    "submit_review": "Envoyer l'Avis",
+    "review_submitted": "Merci ! Votre avis a été soumis et apparaîtra après approbation.",
+    "no_reviews": "Pas encore d'avis. Soyez le premier à partager votre expérience !"
+  },
+  "brands": {
+    "title": "Les Marques de Confiance que Nous Fournissons"
+  },
+  "common": {
+    "loading": "Chargement...",
+    "error": "Une erreur est survenue",
+    "back": "Retour",
+    "view_details": "Voir les Détails",
+    "learn_more": "En Savoir Plus"
+  }
+}

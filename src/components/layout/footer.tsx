@@ -1,0 +1,105 @@
+"use client";
+
+import Link from "next/link";
+import Image from "next/image";
+import { MapPin, Phone, Mail, Facebook, Instagram, Linkedin } from "lucide-react";
+import { useLocaleStore } from "@/lib/store";
+
+export function Footer() {
+  const { t } = useLocaleStore();
+  const year = new Date().getFullYear();
+
+  return (
+    <footer className="bg-navy-600 text-gray-300">
+      <div className="container mx-auto px-4 py-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          {/* Brand */}
+          <div className="space-y-4">
+            <Link href="/" className="flex items-center">
+              <Image src="/logo-white.png" alt="LAGMED" width={140} height={48} className="object-contain h-10 w-auto" />
+            </Link>
+            <p className="text-sm leading-relaxed text-navy-100">{t("footer.description")}</p>
+          </div>
+
+          {/* Quick Links */}
+          <div>
+            <h3 className="text-white font-semibold mb-4">{t("footer.quick_links")}</h3>
+            <ul className="space-y-2">
+              <li>
+                <Link href="/" className="text-sm hover:text-white transition-colors">
+                  {t("nav.home")}
+                </Link>
+              </li>
+              <li>
+                <Link href="/shop" className="text-sm hover:text-white transition-colors">
+                  {t("nav.shop")}
+                </Link>
+              </li>
+              <li>
+                <Link href="/#about" className="text-sm hover:text-white transition-colors">
+                  {t("nav.about")}
+                </Link>
+              </li>
+              <li>
+                <Link href="/quote" className="text-sm hover:text-white transition-colors">
+                  {t("product.request_quote")}
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* Contact Info */}
+          <div>
+            <h3 className="text-white font-semibold mb-4">{t("footer.contact_info")}</h3>
+            <ul className="space-y-3">
+              <li className="flex items-start gap-2 text-sm">
+                <MapPin className="h-4 w-4 mt-0.5 text-navy-200 shrink-0" />
+                Bordj Bou Arreridj, Algeria
+              </li>
+              <li className="flex items-center gap-2 text-sm">
+                <Phone className="h-4 w-4 text-navy-200 shrink-0" />
+                +213 XX XX XX XX
+              </li>
+              <li className="flex items-center gap-2 text-sm">
+                <Mail className="h-4 w-4 text-navy-200 shrink-0" />
+                contact@lagmed.dz
+              </li>
+            </ul>
+          </div>
+
+          {/* Social */}
+          <div>
+            <h3 className="text-white font-semibold mb-4">{t("footer.follow_us")}</h3>
+            <div className="flex gap-3">
+              <a
+                href="#"
+                className="p-2 rounded-lg bg-navy-500 hover:bg-navy-400 transition-colors"
+                aria-label="Facebook"
+              >
+                <Facebook className="h-5 w-5" />
+              </a>
+              <a
+                href="#"
+                className="p-2 rounded-lg bg-navy-500 hover:bg-navy-400 transition-colors"
+                aria-label="Instagram"
+              >
+                <Instagram className="h-5 w-5" />
+              </a>
+              <a
+                href="#"
+                className="p-2 rounded-lg bg-navy-500 hover:bg-navy-400 transition-colors"
+                aria-label="LinkedIn"
+              >
+                <Linkedin className="h-5 w-5" />
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-12 pt-8 border-t border-navy-500 text-center text-sm">
+          <p>&copy; {year} LAGMED. {t("footer.rights")}</p>
+        </div>
+      </div>
+    </footer>
+  );
+}

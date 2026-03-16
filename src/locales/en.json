@@ -1,0 +1,155 @@
+{
+  "nav": {
+    "home": "Home",
+    "shop": "Shop",
+    "about": "About",
+    "contact": "Contact"
+  },
+  "hero": {
+    "title": "Premium Medical Equipment",
+    "subtitle": "Your Trusted Partner for Quality Healthcare Solutions in Algeria",
+    "cta": "Browse Equipment",
+    "contact": "Contact Us"
+  },
+  "about": {
+    "title": "About LAGMED",
+    "subtitle": "Who We Are",
+    "description": "Based in Bordj Bou Arreridj, Algeria, LAGMED is a leading supplier of high-quality medical equipment. We provide healthcare facilities across Algeria with certified, reliable medical devices and equipment.",
+    "mission": "Our mission is to improve healthcare quality by providing cutting-edge medical equipment at competitive prices.",
+    "years": "Years of Experience",
+    "products_count": "Products Available",
+    "clients": "Satisfied Clients",
+    "support": "24/7 Support"
+  },
+  "why_us": {
+    "title": "Why Choose LAGMED?",
+    "quality": "Certified Quality",
+    "quality_desc": "All our equipment meets international quality and safety standards.",
+    "delivery": "Fast Delivery",
+    "delivery_desc": "Reliable delivery service across all of Algeria.",
+    "support": "Expert Support",
+    "support_desc": "Our technical team provides full after-sales support and training.",
+    "pricing": "Competitive Pricing",
+    "pricing_desc": "Best prices guaranteed with flexible payment options."
+  },
+  "categories": {
+    "title": "Equipment Categories",
+    "subtitle": "Browse our wide selection of medical equipment",
+    "view_all": "View All Categories"
+  },
+  "best_sellers": {
+    "title": "Most Bought Equipment",
+    "subtitle": "Our best-selling products trusted by healthcare professionals"
+  },
+  "new_arrivals": {
+    "title": "New Arrivals",
+    "subtitle": "Latest additions to our medical equipment catalog"
+  },
+  "cta_section": {
+    "title": "Need Medical Equipment?",
+    "subtitle": "Request a free quote and our team will contact you within 24 hours.",
+    "button": "Request a Quote"
+  },
+  "contact": {
+    "title": "Contact Us",
+    "subtitle": "Get in touch with our team",
+    "address": "Address",
+    "phone": "Phone",
+    "email": "Email",
+    "form_name": "Full Name",
+    "form_email": "Email Address",
+    "form_phone": "Phone Number",
+    "form_message": "Message",
+    "form_submit": "Send Message"
+  },
+  "shop": {
+    "title": "Medical Equipment",
+    "subtitle": "Browse our complete catalog of medical equipment",
+    "search": "Search equipment...",
+    "filters": "Filters",
+    "sort": "Sort by",
+    "sort_newest": "Newest First",
+    "sort_oldest": "Oldest First",
+    "sort_name_asc": "Name A-Z",
+    "sort_name_desc": "Name Z-A",
+    "all_categories": "All Categories",
+    "no_products": "No products found",
+    "showing": "Showing",
+    "of": "of",
+    "products": "products"
+  },
+  "product": {
+    "specifications": "Technical Specifications",
+    "description": "Description",
+    "certifications": "Certifications",
+    "availability": "Availability",
+    "available": "In Stock",
+    "unavailable": "Out of Stock",
+    "download_datasheet": "Download Datasheet",
+    "request_quote": "Request a Quote",
+    "related": "Related Products",
+    "new": "New",
+    "best_seller": "Best Seller",
+    "brand": "Brand",
+    "category": "Category"
+  },
+  "quote": {
+    "title": "Request a Quote",
+    "subtitle": "Fill in the form below and we'll get back to you within 24 hours.",
+    "name": "Full Name",
+    "company": "Company (optional)",
+    "phone": "Phone Number",
+    "email": "Email Address",
+    "quantity": "Quantity",
+    "notes": "Additional Notes",
+    "submit": "Submit Request",
+    "success_title": "Quote Request Submitted!",
+    "success_message": "Thank you for your request. Our team will contact you within 24 hours.",
+    "for_product": "Quote for"
+  },
+  "footer": {
+    "description": "Your trusted partner for quality medical equipment in Algeria.",
+    "quick_links": "Quick Links",
+    "contact_info": "Contact Info",
+    "follow_us": "Follow Us",
+    "rights": "All rights reserved."
+  },
+  "partners": {
+    "title": "Our Shops & Locations",
+    "subtitle": "Find Us Across Algeria"
+  },
+  "boutiques": {
+    "title": "Our Boutiques",
+    "subtitle": "Our Store Locations",
+    "description": "Visit our stores across Algeria to discover our medical equipment range in person.",
+    "headquarters": "Headquarters",
+    "directions": "Get Directions",
+    "call": "Call",
+    "hours": "Working Hours",
+    "hours_value": "Sat–Thu: 8:00 AM – 5:00 PM",
+    "all_stores": "All Locations"
+  },
+  "testimonials": {
+    "title": "What Our Clients Say",
+    "subtitle": "Trusted by Healthcare Professionals",
+    "write_review": "Write a Review",
+    "your_name": "Your Name",
+    "your_company": "Company / Hospital",
+    "your_role": "Your Role / Position",
+    "your_review": "Your Review",
+    "rating": "Rating",
+    "submit_review": "Submit Review",
+    "review_submitted": "Thank you! Your review has been submitted and will appear after approval.",
+    "no_reviews": "No reviews yet. Be the first to share your experience!"
+  },
+  "brands": {
+    "title": "Trusted Brands We Supply"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "back": "Back",
+    "view_details": "View Details",
+    "learn_more": "Learn More"
+  }
+}

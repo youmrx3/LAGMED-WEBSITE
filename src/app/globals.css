@@ -1,0 +1,62 @@
+@import "tailwindcss";
+
+@theme {
+  --color-navy-50: #ededf4;
+  --color-navy-100: #d2d2e3;
+  --color-navy-200: #a6a6c7;
+  --color-navy-300: #7979ab;
+  --color-navy-400: #4d4d8f;
+  --color-navy-500: #2b2b69;
+  --color-navy-600: #090942;
+  --color-navy-700: #070735;
+  --color-navy-800: #050528;
+  --color-navy-900: #03031a;
+}
+
+:root {
+  --medical-blue: #090942;
+  --medical-blue-light: #ededf4;
+  --medical-blue-dark: #050528;
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c4c4c4;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a0a0a0;
+}
+
+/* Typography for Arabic */
+[dir="rtl"] {
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Placeholder product image */
+.placeholder-gradient {
+  background: linear-gradient(135deg, #e6f0ff 0%, #cce0ff 100%);
+}
+
+/* Hide scrollbar for carousels */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
