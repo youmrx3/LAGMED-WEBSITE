@@ -3,6 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useState } from "react";
+import { useRouter, usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -12,13 +13,25 @@ import { LanguageSwitcher } from "./language-switcher";
 export function Header() {
   const [isOpen, setIsOpen] = useState(false);
   const { t } = useLocaleStore();
+  const router = useRouter();
+  const pathname = usePathname();
 
   const navLinks = [
     { href: "/", label: t("nav.home") },
     { href: "/shop", label: t("nav.shop") },
-    { href: "/#about", label: t("nav.about") },
-    { href: "/#contact", label: t("nav.contact") },
+    { href: "/#about", label: t("nav.about"), isHash: true },
+    { href: "/#contact", label: t("nav.contact"), isHash: true },
   ];
+
+  const handleNavClick = (link: { href: string; isHash?: boolean }) => {
+    // Close mobile menu
+    setIsOpen(false);
+
+    // If it's a hash link and we're not on home, navigate to home first
+    if (link.isHash && pathname !== "/") {
+      router.push("/" + link.href);
+    }
+  };
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-gray-100 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80">
@@ -33,6 +46,7 @@ export function Header() {
             <Link
               key={link.href}
               href={link.href}
+              onClick={() => handleNavClick(link)}
               className="text-sm font-medium text-gray-600 hover:text-navy-600 transition-colors"
             >
               {link.label}
@@ -71,8 +85,8 @@ export function Header() {
                 <Link
                   key={link.href}
                   href={link.href}
+                  onClick={() => handleNavClick(link)}
                   className="block text-sm font-medium text-gray-600 hover:text-navy-600 py-2"
-                  onClick={() => setIsOpen(false)}
                 >
                   {link.label}
                 </Link>
