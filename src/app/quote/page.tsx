@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useLocaleStore } from "@/lib/store";
+import { useToastStore } from "@/lib/toast-store";
 import { createClient } from "@/lib/supabase/client";
 import { quoteRequestSchema, type QuoteRequestFormData } from "@/lib/validations";
 import type { Product } from "@/lib/types";
@@ -24,6 +25,7 @@ export default function QuotePage() {
 
 function QuotePageContent() {
   const { t, locale } = useLocaleStore();
+  const { addToast } = useToastStore();
   const searchParams = useSearchParams();
   const productId = searchParams.get("product");
 
@@ -73,35 +75,52 @@ function QuotePageContent() {
         status: "pending",
       }).select().single();
 
-      if (!error && insertedData) {
-        // Send email notification
-        try {
-          await fetch("/api/notifications/email", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ quoteId: insertedData.id }),
-          });
-        } catch (emailError) {
-          console.error("Failed to send email notification:", emailError);
-        }
-
-        // Send WhatsApp notification
-        try {
-          await fetch("/api/notifications/whatsapp", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ quoteId: insertedData.id }),
-          });
-        } catch (whatsappError) {
-          console.error("Failed to send WhatsApp notification:", whatsappError);
-        }
-
-        setSubmitted(true);
+      if (error) {
+        console.error("Database error:", error);
+        addToast("error", `Failed to save quote: ${error.message}`);
+        setSubmitting(false);
+        return;
       }
-    } catch {
-      // Error handling
+
+      if (!insertedData) {
+        console.error("No data returned after insertion");
+        addToast("error", "Quote was not saved properly");
+        setSubmitting(false);
+        return;
+      }
+
+      console.log("Quote saved:", insertedData.id);
+      addToast("success", "Quote submitted! We will contact you soon.");
+
+      // Send email notification (non-blocking)
+      try {
+        await fetch("/api/notifications/email", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ quoteId: insertedData.id }),
+        });
+      } catch (emailError) {
+        console.error("Email notification failed:", emailError);
+      }
+
+      // Send WhatsApp notification (non-blocking)
+      try {
+        await fetch("/api/notifications/whatsapp", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ quoteId: insertedData.id }),
+        });
+      } catch (whatsappError) {
+        console.error("WhatsApp notification failed:", whatsappError);
+      }
+
+      setSubmitted(true);
+    } catch (error) {
+      console.error("Quote submission error:", error);
+      const errorMsg = error instanceof Error ? error.message : "Unknown error";
+      addToast("error", `Error: ${errorMsg}`);
+      setSubmitting(false);
     }
-    setSubmitting(false);
   };
 
   if (submitted) {
