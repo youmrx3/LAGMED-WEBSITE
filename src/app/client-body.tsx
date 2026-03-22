@@ -5,6 +5,7 @@ import { useLocaleStore } from "@/lib/store";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { WhatsAppButton } from "@/components/layout/whatsapp-button";
+import { ToastContainer } from "@/components/ui/toast";
 
 export function ClientBody({ children }: { children: React.ReactNode }) {
   const { locale, dir } = useLocaleStore();
@@ -29,6 +30,7 @@ export function ClientBody({ children }: { children: React.ReactNode }) {
       <main className="min-h-[calc(100vh-4rem)]">{children}</main>
       <Footer />
       <WhatsAppButton />
+      <ToastContainer />
     </body>
   );
 }

@@ -32,6 +32,7 @@ function QuotePageContent() {
   const [product, setProduct] = useState<Product | null>(null);
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const {
     register,
@@ -62,6 +63,7 @@ function QuotePageContent() {
 
   const onSubmit = async (data: QuoteRequestFormData) => {
     setSubmitting(true);
+    setSubmitError(null);
     try {
       const supabase = createClient();
       const { data: insertedData, error } = await supabase.from("quote_requests").insert({
@@ -77,14 +79,18 @@ function QuotePageContent() {
 
       if (error) {
         console.error("Database error:", error);
-        addToast("error", `Failed to save quote: ${error.message}`);
+        const message = `Failed to save quote: ${error.message}`;
+        addToast("error", message);
+        setSubmitError(message);
         setSubmitting(false);
         return;
       }
 
       if (!insertedData) {
         console.error("No data returned after insertion");
-        addToast("error", "Quote was not saved properly");
+        const message = "Quote was not saved properly";
+        addToast("error", message);
+        setSubmitError(message);
         setSubmitting(false);
         return;
       }
@@ -118,7 +124,9 @@ function QuotePageContent() {
     } catch (error) {
       console.error("Quote submission error:", error);
       const errorMsg = error instanceof Error ? error.message : "Unknown error";
-      addToast("error", `Error: ${errorMsg}`);
+      const message = `Error: ${errorMsg}`;
+      addToast("error", message);
+      setSubmitError(message);
       setSubmitting(false);
     }
   };
@@ -250,6 +258,11 @@ function QuotePageContent() {
               >
                 {t("quote.submit")}
               </Button>
+              {submitError && (
+                <p className="text-sm text-red-600 text-center" role="alert">
+                  {submitError}
+                </p>
+              )}
             </form>
           </div>
         </motion.div>
