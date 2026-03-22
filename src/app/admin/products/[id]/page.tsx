@@ -14,15 +14,16 @@ import { Select } from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
 import { createClient } from "@/lib/supabase/client";
 import { productSchema, type ProductFormData } from "@/lib/validations";
-import type { Category, ProductImage } from "@/lib/types";
+import type { Category, ProductImage, Brand } from "@/lib/types";
 import { useToastStore } from "@/lib/toast-store";
 
 export default function AdminProductFormPage() {
   const router = useRouter();
   const params = useParams<{ id: string }>();
-  const isEdit = params.id !== "new";
+  const isEdit = params?.id && params.id !== "new";
 
   const [categories, setCategories] = useState<Category[]>([]);
+  const [brands, setBrands] = useState<Brand[]>([]);
   const [existingImages, setExistingImages] = useState<ProductImage[]>([]);
   const [newImages, setNewImages] = useState<File[]>([]);
   const [datasheetFile, setDatasheetFile] = useState<File | null>(null);
@@ -31,7 +32,7 @@ export default function AdminProductFormPage() {
   ]);
   const [certEntries, setCertEntries] = useState<string[]>([""]);
   const [saving, setSaving] = useState(false);
-  const [loading, setLoading] = useState(isEdit);
+  const [loading, setLoading] = useState(isEdit ? true : false);
   const { addToast } = useToastStore();
 
   const {
@@ -61,104 +62,209 @@ export default function AdminProductFormPage() {
   });
 
   const fetchProduct = useCallback(async () => {
-    if (!isEdit) return;
-    const supabase = createClient();
-    const { data } = await supabase
-      .from("products")
-      .select("*, product_images(*)")
-      .eq("id", params.id)
-      .single();
-
-    if (data) {
-      reset({
-        name: data.name,
-        name_ar: data.name_ar || "",
-        name_fr: data.name_fr || "",
-        description: data.description,
-        description_ar: data.description_ar || "",
-        description_fr: data.description_fr || "",
-        brand: data.brand,
-        category_id: data.category_id || "",
-        price: data.price,
-        is_new: data.is_new,
-        is_best_seller: data.is_best_seller,
-        is_featured: data.is_featured,
-        is_available: data.is_available,
-      });
-
-      if (data.specifications && typeof data.specifications === "object") {
-        const entries = Object.entries(data.specifications as Record<string, string>).map(
-          ([key, value]) => ({ key, value })
-        );
-        if (entries.length > 0) setSpecEntries(entries);
-      }
-
-      if (data.certifications && data.certifications.length > 0) {
-        setCertEntries(data.certifications);
-      }
-
-      if (data.product_images) {
-        setExistingImages(data.product_images);
-      }
+    if (!isEdit || !params?.id) {
+      setLoading(false);
+      return;
     }
-    setLoading(false);
-  }, [isEdit, params.id, reset]);
+    
+    try {
+      const supabase = createClient();
+      const { data, error } = await supabase
+        .from("products")
+        .select("*, product_images(*)")
+        .eq("id", params.id)
+        .single();
+
+      if (error) {
+        console.error("Error fetching product:", error);
+        addToast("error", "Failed to load product");
+        setLoading(false);
+        return;
+      }
+
+      if (data) {
+        reset({
+          name: data.name,
+          name_ar: data.name_ar || "",
+          name_fr: data.name_fr || "",
+          description: data.description,
+          description_ar: data.description_ar || "",
+          description_fr: data.description_fr || "",
+          brand: data.brand,
+          category_id: data.category_id || "",
+          price: data.price,
+          is_new: data.is_new,
+          is_best_seller: data.is_best_seller,
+          is_featured: data.is_featured,
+          is_available: data.is_available,
+        });
+
+        if (data.specifications && typeof data.specifications === "object") {
+          const entries = Object.entries(data.specifications as Record<string, string>).map(
+            ([key, value]) => ({ key, value })
+          );
+          if (entries.length > 0) setSpecEntries(entries);
+        }
+
+        if (data.certifications && data.certifications.length > 0) {
+          setCertEntries(data.certifications);
+        }
+
+        if (data.product_images) {
+          setExistingImages(data.product_images);
+        }
+      }
+      setLoading(false);
+    } catch (error) {
+      console.error("Unexpected error:", error);
+      addToast("error", "An unexpected error occurred");
+      setLoading(false);
+    }
+  }, [isEdit, params?.id, reset, addToast]);
 
   useEffect(() => {
-    async function fetchCategories() {
-      const supabase = createClient();
-      const { data } = await supabase.from("categories").select("*").order("name");
-      if (data) setCategories(data);
+    async function fetchData() {
+      try {
+        const supabase = createClient();
+        const { data: categoriesData } = await supabase.from("categories").select("*").order("name");
+        if (categoriesData) setCategories(categoriesData);
+        
+        const { data: brandsData } = await supabase.from("brands").select("*").order("name");
+        if (brandsData) setBrands(brandsData);
+      } catch (error) {
+        console.error("Error fetching categories/brands:", error);
+      }
     }
-    fetchCategories();
+    
+    fetchData();
     fetchProduct();
   }, [fetchProduct]);
 
   const uploadImages = async (productId: string) => {
-    if (newImages.length === 0) return;
+    if (newImages.length === 0) {
+      return; // No images to upload
+    }
+
     const supabase = createClient();
+    const uploadResults: { success: string[]; failed: string[] } = { success: [], failed: [] };
 
-    for (let i = 0; i < newImages.length; i++) {
-      const file = newImages[i];
-      const ext = file.name.split(".").pop();
-      const fileName = `${productId}/${Date.now()}-${i}.${ext}`;
+    for (const file of newImages) {
+      try {
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("bucket", "products");
 
-      const { data: uploadData } = await supabase.storage
-        .from("products")
-        .upload(fileName, file);
-
-      if (uploadData) {
-        const {
-          data: { publicUrl },
-        } = supabase.storage.from("products").getPublicUrl(uploadData.path);
-
-        await supabase.from("product_images").insert({
-          product_id: productId,
-          image_url: publicUrl,
-          is_primary: existingImages.length === 0 && i === 0,
-          sort_order: existingImages.length + i,
+        console.log(`Uploading image: ${file.name}...`);
+        
+        const response = await fetch("/api/upload", {
+          method: "POST",
+          body: formData,
         });
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error(`Upload HTTP error for ${file.name}: ${response.status} ${errorText}`);
+          uploadResults.failed.push(file.name);
+          continue;
+        }
+
+        const result = await response.json();
+        
+        if (!result.success) {
+          console.error(`Upload failed for ${file.name}:`, result.error);
+          uploadResults.failed.push(file.name);
+          addToast("error", `Upload error for ${file.name}: ${result.error}`);
+          continue;
+        }
+
+        if (!result.url) {
+          console.error(`No URL returned for ${file.name}`);
+          uploadResults.failed.push(file.name);
+          addToast("error", `No URL returned for ${file.name}`);
+          continue;
+        }
+
+        // Insert image record into database
+        const { error: insertError } = await supabase
+          .from("product_images")
+          .insert({
+            product_id: productId,
+            image_url: result.url,
+            is_primary: existingImages.length === 0 && uploadResults.success.length === 0,
+            sort_order: existingImages.length + uploadResults.success.length,
+          });
+
+        if (insertError) {
+          console.error(`Error inserting image record for ${file.name}:`, insertError);
+          uploadResults.failed.push(file.name);
+          addToast("error", `Failed to save ${file.name} to database: ${insertError.message}`);
+          continue;
+        }
+
+        console.log(`Successfully uploaded: ${file.name}`);
+        uploadResults.success.push(file.name);
+      } catch (error) {
+        const errorMsg = error instanceof Error ? error.message : String(error);
+        console.error(`Exception uploading ${file.name}:`, error);
+        uploadResults.failed.push(file.name);
+        addToast("error", `Failed to upload ${file.name}: ${errorMsg}`);
       }
+    }
+
+    // Report results
+    if (uploadResults.failed.length > 0) {
+      const failedCount = uploadResults.failed.length;
+      const failedNames = uploadResults.failed.join(", ");
+      throw new Error(`Failed to upload ${failedCount} image(s): ${failedNames}`);
+    }
+
+    if (uploadResults.success.length > 0) {
+      addToast("success", `${uploadResults.success.length} image(s) uploaded successfully!`);
     }
   };
 
   const uploadDatasheet = async (productId: string): Promise<string | null> => {
-    if (!datasheetFile) return null;
-    const supabase = createClient();
-    const ext = datasheetFile.name.split(".").pop();
-    const fileName = `${productId}/${Date.now()}.${ext}`;
-
-    const { data } = await supabase.storage
-      .from("datasheets")
-      .upload(fileName, datasheetFile);
-
-    if (data) {
-      const {
-        data: { publicUrl },
-      } = supabase.storage.from("datasheets").getPublicUrl(data.path);
-      return publicUrl;
+    if (!datasheetFile) {
+      return null;
     }
-    return null;
+
+    const formData = new FormData();
+    formData.append("file", datasheetFile);
+    formData.append("bucket", "datasheets");
+
+    try {
+      console.log(`Uploading datasheet: ${datasheetFile.name}...`);
+      
+      const response = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Upload failed: ${response.status} ${errorText}`);
+      }
+
+      const result = await response.json();
+      
+      if (!result.success) {
+        throw new Error(result.error || "Upload failed");
+      }
+
+      if (!result.url) {
+        throw new Error("No URL returned from upload");
+      }
+
+      console.log(`Datasheet uploaded successfully: ${result.url}`);
+      addToast("success", "Datasheet uploaded successfully!");
+      return result.url;
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      console.error(`Datasheet upload error: ${errorMsg}`);
+      addToast("warning", `Datasheet upload failed (optional): ${errorMsg}`);
+      // Return null but don't throw - datasheet is optional
+      return null;
+    }
   };
 
   const deleteImage = async (imageId: string) => {
@@ -169,6 +275,13 @@ export default function AdminProductFormPage() {
 
   const onSubmit = async (data: ProductFormData) => {
     setSaving(true);
+
+    // Ensure we have the product ID for edit mode
+    if (isEdit && !params?.id) {
+      addToast("error", "Product ID not found");
+      setSaving(false);
+      return;
+    }
 
     const specifications: Record<string, string> = {};
     specEntries.forEach((entry) => {
@@ -182,20 +295,44 @@ export default function AdminProductFormPage() {
     const supabase = createClient();
 
     try {
-      if (isEdit) {
-        const datasheetUrl = await uploadDatasheet(params.id);
+      let productId: string;
 
+      if (isEdit) {
+        productId = params.id!; // Safe now due to check above
         const updateData: Record<string, unknown> = {
           ...data,
           specifications,
           certifications,
         };
-        if (datasheetUrl) updateData.datasheet_url = datasheetUrl;
 
-        await supabase.from("products").update(updateData).eq("id", params.id);
-        await uploadImages(params.id);
+        // Upload datasheet first if present
+        if (datasheetFile) {
+          const datasheetUrl = await uploadDatasheet(productId);
+          if (datasheetUrl) {
+            updateData.datasheet_url = datasheetUrl;
+          }
+        }
+
+        // Update product in database
+        const { error } = await supabase
+          .from("products")
+          .update(updateData)
+          .eq("id", productId);
+        
+        if (error) {
+          throw new Error(`Failed to update product: ${error.message}`);
+        }
+
+        // Upload new images
+        if (newImages.length > 0) {
+          await uploadImages(productId);
+          setNewImages([]); // Clear new images after upload
+        }
+
+        addToast("success", "Product updated successfully!");
       } else {
-        const { data: newProduct } = await supabase
+        // Create new product
+        const { data: newProduct, error } = await supabase
           .from("products")
           .insert({
             ...data,
@@ -205,26 +342,50 @@ export default function AdminProductFormPage() {
           .select()
           .single();
 
-        if (newProduct) {
-          const datasheetUrl = await uploadDatasheet(newProduct.id);
+        if (error) {
+          throw new Error(`Failed to create product: ${error.message}`);
+        }
+
+        if (!newProduct) {
+          throw new Error("Failed to create product: No data returned");
+        }
+
+        productId = newProduct.id;
+
+        // Upload datasheet if present
+        if (datasheetFile) {
+          const datasheetUrl = await uploadDatasheet(productId);
           if (datasheetUrl) {
-            await supabase
+            const { error: updateError } = await supabase
               .from("products")
               .update({ datasheet_url: datasheetUrl })
-              .eq("id", newProduct.id);
+              .eq("id", productId);
+            if (updateError) {
+              throw new Error(`Failed to update datasheet: ${updateError.message}`);
+            }
           }
-          await uploadImages(newProduct.id);
         }
+
+        // Upload images
+        if (newImages.length > 0) {
+          await uploadImages(productId);
+          setNewImages([]);
+        }
+
+        addToast("success", "Product created successfully!");
       }
 
-      router.push("/admin/products");
-      addToast("success", isEdit ? "Product updated successfully!" : "Product created successfully!");
+      // Redirect after successful save/update
+      setTimeout(() => {
+        router.push("/admin/products");
+      }, 500);
     } catch (err) {
       console.error("Error saving product:", err);
-      addToast("error", "Failed to save product. Please try again.");
+      const message = err instanceof Error ? err.message : "Failed to save product. Please try again.";
+      addToast("error", message);
+    } finally {
+      setSaving(false);
     }
-
-    setSaving(false);
   };
 
   if (loading) {
@@ -278,7 +439,14 @@ export default function AdminProductFormPage() {
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Brand *
                 </label>
-                <Input {...register("brand")} error={errors.brand?.message} />
+                <Select {...register("brand")} error={errors.brand?.message}>
+                  <option value="">Select a brand</option>
+                  {brands.map((brand) => (
+                    <option key={brand.id} value={brand.name}>
+                      {brand.name}
+                    </option>
+                  ))}
+                </Select>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
