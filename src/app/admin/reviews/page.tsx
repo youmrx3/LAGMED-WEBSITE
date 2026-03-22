@@ -205,7 +205,7 @@ export default function AdminReviewsPage() {
                           {review.company}
                         </p>
                       </div>
-                      <Badge variant={review.status === "approved" ? "success" : review.status === "pending" ? "warning" : "error"} className="ml-auto flex-shrink-0">
+                      <Badge variant={review.status === "approved" ? "success" : review.status === "pending" ? "warning" : "danger"} className="ml-auto flex-shrink-0">
                         {review.status.charAt(0).toUpperCase() + review.status.slice(1)}
                       </Badge>
                     </div>

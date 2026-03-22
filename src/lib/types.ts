@@ -81,6 +81,7 @@ export interface Brand {
   description: string | null;
   description_ar: string | null;
   description_fr: string | null;
+  sort_order: number;
   created_at: string;
 }
 

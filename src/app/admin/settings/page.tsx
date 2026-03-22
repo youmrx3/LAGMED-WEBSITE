@@ -229,8 +229,8 @@ export default function AdminSettingsPage() {
                   {...register("notification_email")} 
                   type="email"
                   placeholder="admin@lagmed.dz"
-                  description="Email where quote requests will be sent"
                 />
+                <p className="text-xs text-gray-500 mt-1">Email where quote requests will be sent</p>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -239,8 +239,8 @@ export default function AdminSettingsPage() {
                 <Input
                   {...register("notification_whatsapp")}
                   placeholder="213XXXXXXXX"
-                  description="WhatsApp number to receive quote notifications"
                 />
+                <p className="text-xs text-gray-500 mt-1">WhatsApp number to receive quote notifications</p>
               </div>
             </div>
           </CardContent>
