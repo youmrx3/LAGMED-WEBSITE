@@ -65,37 +65,25 @@ function QuotePageContent() {
     setSubmitting(true);
     setSubmitError(null);
     try {
-      const supabase = createClient();
-      const { data: insertedData, error } = await supabase.from("quote_requests").insert({
-        product_id: productId || null,
-        name: data.name,
-        company: data.company || null,
-        phone: data.phone,
-        email: data.email,
-        quantity: data.quantity,
-        notes: data.notes || null,
-        status: "pending",
-      }).select().single();
+      const response = await fetch("/api/quotes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...data,
+          product_id: productId || undefined,
+        }),
+      });
 
-      if (error) {
-        console.error("Database error:", error);
-        const message = `Failed to save quote: ${error.message}`;
+      const result = await response.json();
+      if (!response.ok || !result?.quoteId) {
+        const message = `Failed to save quote: ${result?.error || "Unknown error"}`;
         addToast("error", message);
         setSubmitError(message);
         setSubmitting(false);
         return;
       }
 
-      if (!insertedData) {
-        console.error("No data returned after insertion");
-        const message = "Quote was not saved properly";
-        addToast("error", message);
-        setSubmitError(message);
-        setSubmitting(false);
-        return;
-      }
-
-      console.log("Quote saved:", insertedData.id);
+      console.log("Quote saved:", result.quoteId);
       addToast("success", "Quote submitted! We will contact you soon.");
 
       // Send email notification (non-blocking)
@@ -103,7 +91,7 @@ function QuotePageContent() {
         await fetch("/api/notifications/email", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ quoteId: insertedData.id }),
+          body: JSON.stringify({ quoteId: result.quoteId }),
         });
       } catch (emailError) {
         console.error("Email notification failed:", emailError);
@@ -114,7 +102,7 @@ function QuotePageContent() {
         await fetch("/api/notifications/whatsapp", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ quoteId: insertedData.id }),
+          body: JSON.stringify({ quoteId: result.quoteId }),
         });
       } catch (whatsappError) {
         console.error("WhatsApp notification failed:", whatsappError);
