@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 export async function POST(request: NextRequest) {
   try {
@@ -13,32 +13,32 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const supabase = await createClient();
+    const supabase = createAdminClient();
 
     // Fetch quote details
-    const { data: quote } = await supabase
+    const { data: quote, error: quoteError } = await supabase
       .from("quote_requests")
       .select("*, product:products(name)")
       .eq("id", quoteId)
       .single();
 
-    if (!quote) {
+    if (quoteError || !quote) {
       return NextResponse.json(
-        { error: "Quote not found" },
+        { error: quoteError?.message || "Quote not found" },
         { status: 404 }
       );
     }
 
     // Fetch company settings for notification email
-    const { data: settings } = await supabase
+    const { data: settings, error: settingsError } = await supabase
       .from("company_settings")
       .select("notification_email, company_name")
       .limit(1)
       .single();
 
-    if (!settings?.notification_email) {
+    if (settingsError || !settings?.notification_email) {
       return NextResponse.json(
-        { error: "Notification email not configured" },
+        { error: settingsError?.message || "Notification email not configured" },
         { status: 400 }
       );
     }

@@ -79,6 +79,66 @@ Navigate to `/admin/login` and sign in with the admin user you created in Supaba
 
 Set all variables from `.env.local.example` in Vercel's project settings.
 
+### Email and WhatsApp Notifications Setup
+
+After deployment, configure notifications in two places:
+
+1. Admin panel values:
+   - Go to `/admin/settings`
+   - Fill `Notification Email Address`
+   - Fill `WhatsApp Number for Notifications` in international format (example: `213XXXXXXXXX` or `+213XXXXXXXXX`)
+
+2. Vercel environment variables:
+
+Required core variables:
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=...
+NEXT_PUBLIC_SUPABASE_ANON_KEY=...
+SUPABASE_SERVICE_ROLE_KEY=...
+```
+
+Email via Resend:
+
+```env
+EMAIL_PROVIDER=resend
+RESEND_API_KEY=...
+RESEND_FROM_EMAIL=notifications@your-domain.com
+```
+
+Email via SMTP:
+
+```env
+EMAIL_PROVIDER=smtp
+SMTP_HOST=smtp.your-provider.com
+SMTP_PORT=587
+SMTP_SECURE=false
+SMTP_USER=...
+SMTP_PASS=...
+SMTP_FROM=notifications@your-domain.com
+```
+
+WhatsApp via Twilio:
+
+```env
+WHATSAPP_PROVIDER=twilio
+TWILIO_ACCOUNT_SID=...
+TWILIO_AUTH_TOKEN=...
+TWILIO_WHATSAPP_FROM=whatsapp:+14155238886
+```
+
+WhatsApp via Meta WhatsApp Business API:
+
+```env
+WHATSAPP_PROVIDER=whatsapp-business
+WHATSAPP_BUSINESS_ACCESS_TOKEN=...
+WHATSAPP_BUSINESS_PHONE_NUMBER_ID=...
+```
+
+Notes:
+- Quote saving works independently of notification delivery.
+- If provider variables are missing, quote still saves and the UI shows a warning toast.
+
 ---
 
 ## Project Structure

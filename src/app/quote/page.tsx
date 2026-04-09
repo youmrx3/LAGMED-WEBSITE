@@ -88,24 +88,36 @@ function QuotePageContent() {
 
       // Send email notification (non-blocking)
       try {
-        await fetch("/api/notifications/email", {
+        const emailResponse = await fetch("/api/notifications/email", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ quoteId: result.quoteId }),
         });
+        if (!emailResponse.ok) {
+          const emailBody = await emailResponse.json().catch(() => ({}));
+          console.error("Email notification failed:", emailBody?.error || emailResponse.statusText);
+          addToast("warning", "Quote saved, but email notification failed.");
+        }
       } catch (emailError) {
         console.error("Email notification failed:", emailError);
+        addToast("warning", "Quote saved, but email notification failed.");
       }
 
       // Send WhatsApp notification (non-blocking)
       try {
-        await fetch("/api/notifications/whatsapp", {
+        const whatsappResponse = await fetch("/api/notifications/whatsapp", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ quoteId: result.quoteId }),
         });
+        if (!whatsappResponse.ok) {
+          const whatsappBody = await whatsappResponse.json().catch(() => ({}));
+          console.error("WhatsApp notification failed:", whatsappBody?.error || whatsappResponse.statusText);
+          addToast("warning", "Quote saved, but WhatsApp notification failed.");
+        }
       } catch (whatsappError) {
         console.error("WhatsApp notification failed:", whatsappError);
+        addToast("warning", "Quote saved, but WhatsApp notification failed.");
       }
 
       setSubmitted(true);

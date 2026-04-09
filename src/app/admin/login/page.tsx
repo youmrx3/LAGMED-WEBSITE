@@ -50,7 +50,7 @@ export default function AdminLoginPage() {
       <div className="w-full max-w-md mx-4">
         <div className="text-center mb-8">
           <div className="mx-auto mb-3">
-            <Image src="/logo-navy.png" alt="LAGMED" width={160} height={56} className="object-contain h-14 w-auto mx-auto" />
+            <Image src="/logo%20v2-06.png" alt="LAGMED" width={160} height={56} className="object-contain h-14 w-auto mx-auto" />
           </div>
           <h1 className="text-2xl font-bold text-gray-900">Admin Panel</h1>
           <p className="text-gray-600 text-sm mt-1">LAGMED Management</p>

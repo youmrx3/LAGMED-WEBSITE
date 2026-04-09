@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 export async function POST(request: NextRequest) {
   try {
@@ -13,32 +13,32 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const supabase = await createClient();
+    const supabase = createAdminClient();
 
     // Fetch quote details
-    const { data: quote } = await supabase
+    const { data: quote, error: quoteError } = await supabase
       .from("quote_requests")
       .select("*, product:products(name)")
       .eq("id", quoteId)
       .single();
 
-    if (!quote) {
+    if (quoteError || !quote) {
       return NextResponse.json(
-        { error: "Quote not found" },
+        { error: quoteError?.message || "Quote not found" },
         { status: 404 }
       );
     }
 
     // Fetch company settings for notification WhatsApp number
-    const { data: settings } = await supabase
+    const { data: settings, error: settingsError } = await supabase
       .from("company_settings")
       .select("notification_whatsapp, company_name")
       .limit(1)
       .single();
 
-    if (!settings?.notification_whatsapp) {
+    if (settingsError || !settings?.notification_whatsapp) {
       return NextResponse.json(
-        { error: "Notification WhatsApp number not configured" },
+        { error: settingsError?.message || "Notification WhatsApp number not configured" },
         { status: 400 }
       );
     }
@@ -113,6 +113,7 @@ async function sendViaTwilio(to: string, message: string) {
   }
 
   const auth = Buffer.from(`${accountSid}:${authToken}`).toString("base64");
+  const normalizedTo = normalizePhoneNumber(to);
 
   const response = await fetch(
     `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`,
@@ -124,7 +125,7 @@ async function sendViaTwilio(to: string, message: string) {
       },
       body: new URLSearchParams({
         From: fromNumber,
-        To: `whatsapp:+${to}`,
+        To: `whatsapp:${normalizedTo}`,
         Body: message,
       }).toString(),
     }
@@ -150,7 +151,7 @@ async function sendViaWhatsAppBusiness(to: string, message: string) {
   }
 
   const response = await fetch(
-    `https://graph.instagram.com/v18.0/${phoneNumberId}/messages`,
+    `https://graph.facebook.com/v18.0/${phoneNumberId}/messages`,
     {
       method: "POST",
       headers: {
@@ -159,7 +160,7 @@ async function sendViaWhatsAppBusiness(to: string, message: string) {
       },
       body: JSON.stringify({
         messaging_product: "whatsapp",
-        to: to.startsWith("+") ? to : `+${to}`,
+        to: normalizePhoneNumber(to),
         type: "text",
         text: {
           body: message,
@@ -174,4 +175,10 @@ async function sendViaWhatsAppBusiness(to: string, message: string) {
 
   const data = await response.json();
   return { sid: data.messages[0].id };
+}
+
+function normalizePhoneNumber(raw: string) {
+  const cleaned = raw.trim().replace(/[\s()-]/g, "");
+  const withPlus = cleaned.startsWith("+") ? cleaned : `+${cleaned.replace(/^\+/, "")}`;
+  return withPlus;
 }

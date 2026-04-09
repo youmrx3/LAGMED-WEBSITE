@@ -83,7 +83,7 @@ export default function AdminLayout({
         }`}
       >
         <div className="flex items-center gap-2 p-6 border-b border-gray-100">
-          <Image src="/logo-navy.png" alt="LAGMED" width={120} height={40} className="object-contain h-8 w-auto" />
+          <Image src="/logo%20v2-06.png" alt="LAGMED" width={120} height={40} className="object-contain h-8 w-auto" />
           <span className="text-xs text-gray-400 ml-1">Admin</span>
           <button
             className="ml-auto lg:hidden"

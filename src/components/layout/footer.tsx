@@ -16,7 +16,7 @@ export function Footer() {
           {/* Brand */}
           <div className="space-y-4">
             <Link href="/" className="flex items-center">
-              <Image src="/logo-white.png" alt="LAGMED" width={140} height={48} className="object-contain h-10 w-auto" />
+              <Image src="/logo%20v2-10.png" alt="LAGMED" width={140} height={48} className="object-contain h-10 w-auto" />
             </Link>
             <p className="text-sm leading-relaxed text-navy-100">{t("footer.description")}</p>
           </div>
