@@ -184,8 +184,9 @@ export default function AdminSettingsPage() {
         break;
       }
 
-      const { [missingColumn]: _removed, ...rest } = payload;
-      payload = rest;
+      const nextPayload: SettingsFormValues = { ...payload };
+      delete (nextPayload as Record<string, unknown>)[missingColumn];
+      payload = nextPayload;
       missingColumns.push(missingColumn);
       attempts += 1;
     }
