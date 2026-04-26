@@ -17,11 +17,16 @@ export function CTASection() {
   useEffect(() => {
     async function fetchImage() {
       const supabase = createClient();
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("company_settings")
         .select("cta_image")
+        .order("id", { ascending: true })
         .limit(1)
-        .single();
+        .maybeSingle();
+      if (error) {
+        console.warn("Failed to fetch CTA image:", error.message);
+        return;
+      }
       if (data?.cta_image) setCtaImage(data.cta_image);
     }
     fetchImage();

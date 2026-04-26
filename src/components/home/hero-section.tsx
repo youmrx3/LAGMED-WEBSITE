@@ -22,11 +22,16 @@ export function HeroSection() {
   useEffect(() => {
     async function fetchImages() {
       const supabase = createClient();
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("company_settings")
         .select("hero_image_1, hero_image_2, hero_image_3")
+        .order("id", { ascending: true })
         .limit(1)
-        .single();
+        .maybeSingle();
+      if (error) {
+        console.warn("Failed to fetch hero images:", error.message);
+        return;
+      }
       if (data) {
         const imgs = [data.hero_image_1, data.hero_image_2, data.hero_image_3].filter(Boolean) as string[];
         if (imgs.length > 0) setHeroImages(imgs);
@@ -40,7 +45,7 @@ export function HeroSection() {
       setCurrentImage((prev) => (prev + 1) % heroImages.length);
     }, 5000);
     return () => clearInterval(timer);
-  }, []);
+  }, [heroImages.length]);
 
   return (
     <section className="relative overflow-hidden min-h-[calc(100vh-4rem)]">

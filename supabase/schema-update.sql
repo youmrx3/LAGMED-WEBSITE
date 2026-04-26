@@ -6,7 +6,7 @@
 -- =============================================
 -- STORES / BOUTIQUES TABLE
 -- =============================================
-CREATE TABLE stores (
+CREATE TABLE IF NOT EXISTS stores (
   id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
   name TEXT NOT NULL,
   name_ar TEXT NOT NULL DEFAULT '',
@@ -24,25 +24,27 @@ CREATE TABLE stores (
 );
 
 -- Enable RLS
-ALTER TABLE stores ENABLE ROW LEVEL SECURITY;
+ALTER TABLE IF EXISTS stores ENABLE ROW LEVEL SECURITY;
 
 -- Public read
+DROP POLICY IF EXISTS "Public can read stores" ON stores;
 CREATE POLICY "Public can read stores" ON stores
   FOR SELECT USING (true);
 
 -- Admin full access
+DROP POLICY IF EXISTS "Admin full access stores" ON stores;
 CREATE POLICY "Admin full access stores" ON stores
   FOR ALL USING (auth.role() = 'authenticated');
 
 -- Index
-CREATE INDEX idx_stores_sort ON stores(sort_order);
+CREATE INDEX IF NOT EXISTS idx_stores_sort ON stores(sort_order);
 
 -- =============================================
 -- ADD IMAGE FIELDS TO COMPANY_SETTINGS
 -- =============================================
-ALTER TABLE company_settings ADD COLUMN IF NOT EXISTS hero_image_1 TEXT;
-ALTER TABLE company_settings ADD COLUMN IF NOT EXISTS hero_image_2 TEXT;
-ALTER TABLE company_settings ADD COLUMN IF NOT EXISTS hero_image_3 TEXT;
-ALTER TABLE company_settings ADD COLUMN IF NOT EXISTS about_image_main TEXT;
-ALTER TABLE company_settings ADD COLUMN IF NOT EXISTS about_image_small TEXT;
-ALTER TABLE company_settings ADD COLUMN IF NOT EXISTS cta_image TEXT;
+ALTER TABLE IF EXISTS company_settings ADD COLUMN IF NOT EXISTS hero_image_1 TEXT;
+ALTER TABLE IF EXISTS company_settings ADD COLUMN IF NOT EXISTS hero_image_2 TEXT;
+ALTER TABLE IF EXISTS company_settings ADD COLUMN IF NOT EXISTS hero_image_3 TEXT;
+ALTER TABLE IF EXISTS company_settings ADD COLUMN IF NOT EXISTS about_image_main TEXT;
+ALTER TABLE IF EXISTS company_settings ADD COLUMN IF NOT EXISTS about_image_small TEXT;
+ALTER TABLE IF EXISTS company_settings ADD COLUMN IF NOT EXISTS cta_image TEXT;

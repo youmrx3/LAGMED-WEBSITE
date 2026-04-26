@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { Save, Image as ImageIcon, Upload } from "lucide-react";
+import { Save, Image as ImageIcon, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -10,6 +10,26 @@ import { Card, CardContent } from "@/components/ui/card";
 import { createClient } from "@/lib/supabase/client";
 import type { CompanySettings } from "@/lib/types";
 import { useToastStore } from "@/lib/toast-store";
+
+type SettingsFormValues = Partial<Omit<CompanySettings, "id">>;
+
+function getMissingColumn(errorMessage: string) {
+  const match = errorMessage.match(/column\s+"?([a-zA-Z0-9_]+)"?/i);
+  return match?.[1] || null;
+}
+
+function buildPayload(
+  data: SettingsFormValues,
+  availableColumns: string[] | null
+) {
+  const entries = Object.entries(data).filter(([key, value]) => {
+    if (value === undefined) return false;
+    if (!availableColumns) return true;
+    return availableColumns.includes(key);
+  });
+
+  return Object.fromEntries(entries) as SettingsFormValues;
+}
 
 function ImageField({
   label,
@@ -83,44 +103,114 @@ export default function AdminSettingsPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [settingsId, setSettingsId] = useState<string | null>(null);
+  const [availableColumns, setAvailableColumns] = useState<string[] | null>(null);
+  const [schemaWarning, setSchemaWarning] = useState<string | null>(null);
   const { addToast } = useToastStore();
 
-  const { register, handleSubmit, reset, watch, setValue } = useForm<Partial<CompanySettings>>();
+  const { register, handleSubmit, reset, watch, setValue } = useForm<SettingsFormValues>();
+
+  const loadSettings = useCallback(async () => {
+    setLoading(true);
+    const supabase = createClient();
+    const { data, error } = await supabase
+      .from("company_settings")
+      .select("*")
+      .order("id", { ascending: true })
+      .limit(1)
+      .maybeSingle();
+
+    if (error) {
+      addToast("error", `Failed to load settings: ${error.message}`);
+      setLoading(false);
+      return;
+    }
+
+    if (data) {
+      setSettingsId(data.id);
+      setAvailableColumns(Object.keys(data));
+      reset(data);
+    } else {
+      setSettingsId(null);
+      setAvailableColumns(null);
+      reset({});
+    }
+
+    setLoading(false);
+  }, [addToast, reset]);
 
   useEffect(() => {
-    async function fetchSettings() {
-      const supabase = createClient();
-      const { data } = await supabase
-        .from("company_settings")
-        .select("*")
-        .limit(1)
-        .single();
+    void loadSettings();
+  }, [loadSettings]);
 
-      if (data) {
-        setSettingsId(data.id);
-        reset(data);
-      }
-      setLoading(false);
-    }
-    fetchSettings();
-  }, [reset]);
-
-  const onSubmit = async (data: Partial<CompanySettings>) => {
+  const onSubmit = async (data: SettingsFormValues) => {
     setSaving(true);
     const supabase = createClient();
 
-    if (settingsId) {
-      await supabase.from("company_settings").update(data).eq("id", settingsId);
-    } else {
-      const { data: newData } = await supabase
-        .from("company_settings")
-        .insert(data)
-        .select()
-        .single();
-      if (newData) setSettingsId(newData.id);
+    const missingColumns: string[] = [];
+    let payload = buildPayload(data, availableColumns);
+    let attempts = 0;
+    let savedId: string | null = settingsId;
+    let writeError: { message: string } | null = null;
+
+    while (attempts < 8) {
+      const query = settingsId
+        ? supabase
+            .from("company_settings")
+            .update(payload)
+            .eq("id", settingsId)
+            .select("id")
+            .maybeSingle()
+        : supabase
+            .from("company_settings")
+            .insert(payload)
+            .select("id")
+            .single();
+
+      const { data: writeData, error } = await query;
+
+      if (!error) {
+        if (writeData?.id) {
+          savedId = writeData.id;
+          setSettingsId(writeData.id);
+        }
+        writeError = null;
+        break;
+      }
+
+      writeError = { message: error.message };
+
+      const missingColumn = getMissingColumn(error.message);
+      if (!missingColumn || !(missingColumn in payload)) {
+        break;
+      }
+
+      const { [missingColumn]: _removed, ...rest } = payload;
+      payload = rest;
+      missingColumns.push(missingColumn);
+      attempts += 1;
     }
 
-    addToast("success", "Settings saved successfully!");
+    if (writeError) {
+      addToast("error", `Could not save settings: ${writeError.message}`);
+      setSaving(false);
+      return;
+    }
+
+    if (missingColumns.length > 0) {
+      const uniqueColumns = Array.from(new Set(missingColumns));
+      const warningMessage = `Database is missing columns (${uniqueColumns.join(", ")}). Run the latest SQL migration files in supabase/.`;
+      setSchemaWarning(warningMessage);
+      addToast("warning", "Settings saved partially. Database schema needs migration.");
+    } else {
+      setSchemaWarning(null);
+      addToast("success", "Settings saved successfully!");
+    }
+
+    if (!savedId) {
+      addToast("warning", "Settings were saved, but no settings row ID was returned. Reload and try again.");
+    }
+
+    await loadSettings();
     setSaving(false);
   };
 
@@ -131,6 +221,13 @@ export default function AdminSettingsPage() {
   return (
     <div className="max-w-4xl space-y-6">
       <h1 className="text-2xl font-bold text-gray-900">Company Settings</h1>
+
+      {schemaWarning && (
+        <div className="rounded-lg border border-yellow-200 bg-yellow-50 px-4 py-3 text-sm text-yellow-800 flex items-start gap-2">
+          <AlertTriangle className="h-4 w-4 mt-0.5 flex-shrink-0" />
+          <span>{schemaWarning}</span>
+        </div>
+      )}
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         {/* Company Info */}

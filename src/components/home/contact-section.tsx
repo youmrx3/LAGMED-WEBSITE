@@ -1,11 +1,40 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { MapPin, Phone, Mail } from "lucide-react";
 import { useLocaleStore } from "@/lib/store";
+import { createClient } from "@/lib/supabase/client";
+import type { CompanySettings } from "@/lib/types";
 
 export function ContactSection() {
   const { t } = useLocaleStore();
+  const [settings, setSettings] = useState<CompanySettings | null>(null);
+
+  useEffect(() => {
+    const supabase = createClient();
+
+    async function fetchSettings() {
+      const { data, error } = await supabase
+        .from("company_settings")
+        .select("*")
+        .order("id", { ascending: true })
+        .limit(1)
+        .maybeSingle();
+      if (error) {
+        console.warn("Failed to fetch contact settings:", error.message);
+        return;
+      }
+      if (data) setSettings(data);
+    }
+
+    fetchSettings();
+
+    // Poll for updates every 5 seconds
+    const interval = setInterval(fetchSettings, 5000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <section id="contact" className="py-20 bg-white">
@@ -34,21 +63,21 @@ export function ContactSection() {
               <MapPin className="h-6 w-6 text-navy-600 shrink-0 mt-0.5" />
               <div>
                 <h3 className="font-semibold text-gray-900">{t("contact.address")}</h3>
-                <p className="text-gray-600 text-sm">Bordj Bou Arreridj, Algeria</p>
+                <p className="text-gray-600 text-sm">{settings?.address || "Bordj Bou Arreridj, Algeria"}</p>
               </div>
             </div>
             <div className="flex items-start gap-4 p-4 rounded-lg bg-gray-50">
               <Phone className="h-6 w-6 text-navy-600 shrink-0 mt-0.5" />
               <div>
                 <h3 className="font-semibold text-gray-900">{t("contact.phone")}</h3>
-                <p className="text-gray-600 text-sm">+213 XX XX XX XX</p>
+                <p className="text-gray-600 text-sm">{settings?.phone || "+213 XX XX XX XX"}</p>
               </div>
             </div>
             <div className="flex items-start gap-4 p-4 rounded-lg bg-gray-50">
               <Mail className="h-6 w-6 text-navy-600 shrink-0 mt-0.5" />
               <div>
                 <h3 className="font-semibold text-gray-900">{t("contact.email")}</h3>
-                <p className="text-gray-600 text-sm">contact@lagmed.dz</p>
+                <p className="text-gray-600 text-sm">{settings?.email || "contact@lagmed.dz"}</p>
               </div>
             </div>
           </motion.div>
@@ -61,7 +90,7 @@ export function ContactSection() {
             className="rounded-xl overflow-hidden shadow-sm border border-gray-200"
           >
             <iframe
-              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d51641.672!2d4.7!3d36.07!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x128d6b8e9e6b7b0b%3A0x7f9e7a6f7f9e7a6f!2sBordj%20Bou%20Arreridj!5e0!3m2!1sen!2sdz!4v1700000000000!5m2!1sen!2sdz"
+              src={settings?.google_maps_url || "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d51641.672!2d4.7!3d36.07!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x128d6b8e9e6b7b0b%3A0x7f9e7a6f7f9e7a6f!2sBordj%20Bou%20Arreridj!5e0!3m2!1sen!2sdz!4v1700000000000!5m2!1sen!2sdz"}
               width="100%"
               height="350"
               style={{ border: 0 }}

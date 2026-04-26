@@ -32,14 +32,18 @@ A modern, production-ready website for a medical equipment company located in Bo
 
 1. Create a new project at [supabase.com](https://supabase.com)
 2. Go to **SQL Editor** and run the contents of `supabase/schema.sql`
-3. Set up **Storage Buckets**:
+3. Run incremental migrations (especially if your DB was created before recent updates):
+   - `supabase/schema-update.sql`
+   - `supabase/schema-update-v3.sql`
+   - `supabase/schema-fix-quote-rls.sql`
+4. Set up **Storage Buckets**:
    - Go to Storage > Create buckets: `products`, `datasheets`, `company`
    - Set all buckets to **public**
    - Run the storage policy SQL (commented section at bottom of schema.sql)
-4. Set up **Authentication**:
+5. Set up **Authentication**:
    - Go to Authentication > Users
    - Create an admin user with email/password
-5. Copy your project URL and anon key from Settings > API
+6. Copy your project URL and anon key from Settings > API
 
 ### 3. Environment Variables
 

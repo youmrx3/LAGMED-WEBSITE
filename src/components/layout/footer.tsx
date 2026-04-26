@@ -14,16 +14,28 @@ export function Footer() {
   const [settings, setSettings] = useState<CompanySettings | null>(null);
 
   useEffect(() => {
+    const supabase = createClient();
+
     async function fetchSettings() {
-      const supabase = createClient();
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("company_settings")
         .select("*")
+        .order("id", { ascending: true })
         .limit(1)
-        .single();
+        .maybeSingle();
+      if (error) {
+        console.warn("Failed to fetch footer settings:", error.message);
+        return;
+      }
       if (data) setSettings(data);
     }
+
     fetchSettings();
+
+    // Poll for updates every 5 seconds
+    const interval = setInterval(fetchSettings, 5000);
+
+    return () => clearInterval(interval);
   }, []);
 
   return (

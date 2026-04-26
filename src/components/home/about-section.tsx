@@ -42,11 +42,16 @@ export function AboutSection() {
   useEffect(() => {
     async function fetchImages() {
       const supabase = createClient();
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("company_settings")
         .select("about_image_main, about_image_small")
+        .order("id", { ascending: true })
         .limit(1)
-        .single();
+        .maybeSingle();
+      if (error) {
+        console.warn("Failed to fetch about images:", error.message);
+        return;
+      }
       if (data) {
         if (data.about_image_main) setMainImage(data.about_image_main);
         if (data.about_image_small) setSmallImage(data.about_image_small);
