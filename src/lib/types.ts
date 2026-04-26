@@ -119,6 +119,7 @@ export interface CompanySettings {
   facebook_url: string | null;
   instagram_url: string | null;
   linkedin_url: string | null;
+  ouadkniss_url: string | null;
   whatsapp_number: string | null;
   notification_email: string | null;
   notification_whatsapp: string | null;

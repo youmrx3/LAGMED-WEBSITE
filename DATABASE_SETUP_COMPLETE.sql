@@ -93,6 +93,7 @@ CREATE TABLE company_settings (
   facebook_url TEXT,
   instagram_url TEXT,
   linkedin_url TEXT,
+  ouadkniss_url TEXT,
   whatsapp_number TEXT,
   notification_email TEXT,
   notification_whatsapp TEXT,

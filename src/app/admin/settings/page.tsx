@@ -313,6 +313,15 @@ export default function AdminSettingsPage() {
                   placeholder="https://linkedin.com/..."
                 />
               </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Ouadkniss URL
+                </label>
+                <Input
+                  {...register("ouadkniss_url")}
+                  placeholder="https://ouadkniss.com/..."
+                />
+              </div>
             </div>
           </CardContent>
         </Card>
