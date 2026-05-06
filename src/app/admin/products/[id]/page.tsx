@@ -68,12 +68,15 @@ export default function AdminProductFormPage() {
     }
     
     try {
+      console.log("Fetching product ID:", params.id);
       const supabase = createClient();
       const { data, error } = await supabase
         .from("products")
         .select("*, product_images(*)")
         .eq("id", params.id)
         .single();
+
+      console.log("Product fetch response - Error:", error, "Data received:", !!data);
 
       if (error) {
         console.error("Error fetching product:", error);
@@ -83,6 +86,12 @@ export default function AdminProductFormPage() {
       }
 
       if (data) {
+        console.log("Product data loaded, resetting form with:", {
+          name: data.name,
+          brand: data.brand,
+          category_id: data.category_id,
+        });
+        
         reset({
           name: data.name,
           name_ar: data.name_ar || "",
@@ -97,26 +106,38 @@ export default function AdminProductFormPage() {
           is_best_seller: data.is_best_seller,
           is_featured: data.is_featured,
           is_available: data.is_available,
+          certifications: data.certifications || [],
+          specifications:
+            data.specifications && typeof data.specifications === "object"
+              ? (data.specifications as Record<string, string>)
+              : {},
         });
 
         if (data.specifications && typeof data.specifications === "object") {
           const entries = Object.entries(data.specifications as Record<string, string>).map(
             ([key, value]) => ({ key, value })
           );
-          if (entries.length > 0) setSpecEntries(entries);
+          if (entries.length > 0) {
+            console.log("Setting specifications:", entries);
+            setSpecEntries(entries);
+          }
         }
 
         if (data.certifications && data.certifications.length > 0) {
+          console.log("Setting certifications:", data.certifications);
           setCertEntries(data.certifications);
         }
 
         if (data.product_images) {
+          console.log("Setting existing images:", data.product_images.length);
           setExistingImages(data.product_images);
         }
+        
+        console.log("Product loading complete");
       }
       setLoading(false);
     } catch (error) {
-      console.error("Unexpected error:", error);
+      console.error("Unexpected error loading product:", error);
       addToast("error", "An unexpected error occurred");
       setLoading(false);
     }
@@ -275,6 +296,7 @@ export default function AdminProductFormPage() {
 
   const onSubmit = async (data: ProductFormData) => {
     setSaving(true);
+    console.log("Product submit started, isEdit:", isEdit);
 
     // Ensure we have the product ID for edit mode
     if (isEdit && !params?.id) {
@@ -299,11 +321,15 @@ export default function AdminProductFormPage() {
 
       if (isEdit) {
         productId = params.id!; // Safe now due to check above
+        console.log("Updating product ID:", productId);
+        
         const updateData: Record<string, unknown> = {
           ...data,
           specifications,
           certifications,
         };
+
+        console.log("Update payload:", updateData);
 
         // Upload datasheet first if present
         if (datasheetFile) {
@@ -314,13 +340,21 @@ export default function AdminProductFormPage() {
         }
 
         // Update product in database
-        const { error } = await supabase
+        const { data: updateResult, error } = await supabase
           .from("products")
           .update(updateData)
-          .eq("id", productId);
+          .eq("id", productId)
+          .select();
+        
+        console.log("Supabase update response - Error:", error, "Result:", updateResult);
         
         if (error) {
+          console.error("Update error object:", error);
           throw new Error(`Failed to update product: ${error.message}`);
+        }
+
+        if (!updateResult) {
+          console.warn("Update succeeded but no data returned");
         }
 
         // Upload new images
@@ -329,6 +363,7 @@ export default function AdminProductFormPage() {
           setNewImages([]); // Clear new images after upload
         }
 
+        console.log("Product update completed successfully");
         addToast("success", "Product updated successfully!");
       } else {
         // Create new product
@@ -377,11 +412,17 @@ export default function AdminProductFormPage() {
 
       // Redirect after successful save/update
       setTimeout(() => {
+        console.log("Redirecting to products list");
         router.push("/admin/products");
       }, 500);
     } catch (err) {
       console.error("Error saving product:", err);
       const message = err instanceof Error ? err.message : "Failed to save product. Please try again.";
+      console.error("Full error details:", {
+        errorMessage: message,
+        errorStack: err instanceof Error ? err.stack : "No stack trace",
+        errorObject: err,
+      });
       addToast("error", message);
     } finally {
       setSaving(false);
@@ -407,7 +448,16 @@ export default function AdminProductFormPage() {
         </h1>
       </div>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      <form
+        onSubmit={handleSubmit(
+          onSubmit,
+          (formErrors) => {
+            console.warn("Product form validation blocked submit:", formErrors);
+            addToast("error", "Please fix the highlighted fields before updating the product.");
+          }
+        )}
+        className="space-y-6"
+      >
         {/* Basic Info */}
         <Card>
           <CardContent className="space-y-4">
