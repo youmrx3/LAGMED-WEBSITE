@@ -541,19 +541,19 @@ export default function AdminProductFormPage() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Description (English) *
+                Description (French) *
               </label>
               <Textarea
-                {...register("description")}
-                error={errors.description?.message}
+                {...register("description_fr")}
+                error={errors.description_fr?.message}
                 rows={4}
               />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Description (French)
+                Description (English)
               </label>
-              <Textarea {...register("description_fr")} rows={3} />
+              <Textarea {...register("description")} rows={3} />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
