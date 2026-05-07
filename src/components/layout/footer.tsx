@@ -45,7 +45,13 @@ export function Footer() {
           {/* Brand */}
           <div className="space-y-4">
             <Link href="/" className="flex items-center">
-              <Image src="/logo%20v2-11.png" alt="GL MEDICAL" width={140} height={48} className="object-contain h-10 w-auto" />
+              <Image
+                src={settings?.footer_logo_url || settings?.logo_url || "/logo%20v2-11.png"}
+                alt="GL MEDICAL"
+                width={140}
+                height={48}
+                className="object-contain h-10 w-auto"
+              />
             </Link>
             <p className="text-sm leading-relaxed text-navy-100">{t("footer.description")}</p>
           </div>

@@ -437,6 +437,33 @@ export default function AdminSettingsPage() {
             <div>
               <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
                 <ImageIcon className="h-4 w-4" />
+                Brand Logos
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <ImageField
+                  label="Navbar Logo"
+                  value={watch("header_logo_url") || watch("logo_url") || null}
+                  onUrlChange={(url) => setValue("header_logo_url", url)}
+                  fieldName="logo-header"
+                />
+                <ImageField
+                  label="Footer Logo"
+                  value={watch("footer_logo_url") || watch("logo_url") || null}
+                  onUrlChange={(url) => setValue("footer_logo_url", url)}
+                  fieldName="logo-footer"
+                />
+                <ImageField
+                  label="Admin Logo"
+                  value={watch("admin_logo_url") || watch("logo_url") || null}
+                  onUrlChange={(url) => setValue("admin_logo_url", url)}
+                  fieldName="logo-admin"
+                />
+              </div>
+            </div>
+
+            <div>
+              <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                <ImageIcon className="h-4 w-4" />
                 Hero Section (Background Carousel)
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

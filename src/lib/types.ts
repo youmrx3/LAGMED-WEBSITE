@@ -120,6 +120,9 @@ export interface CompanySettings {
   phone2: string | null;
   email: string;
   logo_url: string | null;
+  header_logo_url: string | null;
+  footer_logo_url: string | null;
+  admin_logo_url: string | null;
   about: string;
   about_ar: string;
   about_fr: string;

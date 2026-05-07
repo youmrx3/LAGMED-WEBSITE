@@ -19,6 +19,7 @@ import {
 import { createClient } from "@/lib/supabase/client";
 import Image from "next/image";
 import { ToastContainer } from "@/components/ui/toast";
+import type { CompanySettings } from "@/lib/types";
 
 const navItems = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
@@ -40,6 +41,7 @@ export default function AdminLayout({
   const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [user, setUser] = useState<string | null>(null);
+  const [settings, setSettings] = useState<CompanySettings | null>(null);
 
   useEffect(() => {
     async function checkUser() {
@@ -52,6 +54,28 @@ export default function AdminLayout({
       }
     }
     checkUser();
+  }, []);
+
+  useEffect(() => {
+    const supabase = createClient();
+
+    async function fetchSettings() {
+      const { data, error } = await supabase
+        .from("company_settings")
+        .select("admin_logo_url, logo_url")
+        .order("id", { ascending: true })
+        .limit(1)
+        .maybeSingle();
+
+      if (error) {
+        console.warn("Failed to fetch admin logo:", error.message);
+        return;
+      }
+
+      if (data) setSettings(data as CompanySettings);
+    }
+
+    fetchSettings();
   }, []);
 
   // Don't wrap login page in admin layout
@@ -83,7 +107,13 @@ export default function AdminLayout({
         }`}
       >
         <div className="flex items-center gap-2 p-6 border-b border-gray-100">
-          <Image src="/logo%20v2-06.png" alt="LAGMED" width={120} height={40} className="object-contain h-8 w-auto" />
+          <Image
+            src={settings?.admin_logo_url || settings?.logo_url || "/logo%20v2-06.png"}
+            alt="GL MEDICAL"
+            width={120}
+            height={40}
+            className="object-contain h-8 w-auto"
+          />
           <span className="text-xs text-gray-400 ml-1">Admin</span>
           <button
             className="ml-auto lg:hidden"

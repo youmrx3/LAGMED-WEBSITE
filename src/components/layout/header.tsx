@@ -2,19 +2,44 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useLocaleStore } from "@/lib/store";
 import { LanguageSwitcher } from "./language-switcher";
+import { createClient } from "@/lib/supabase/client";
+import type { CompanySettings } from "@/lib/types";
 
 export function Header() {
   const [isOpen, setIsOpen] = useState(false);
   const { t } = useLocaleStore();
   const pathname = usePathname();
   const router = useRouter();
+  const [settings, setSettings] = useState<CompanySettings | null>(null);
+
+  useEffect(() => {
+    const supabase = createClient();
+
+    async function fetchSettings() {
+      const { data, error } = await supabase
+        .from("company_settings")
+        .select("header_logo_url, logo_url")
+        .order("id", { ascending: true })
+        .limit(1)
+        .maybeSingle();
+
+      if (error) {
+        console.warn("Failed to fetch header logo:", error.message);
+        return;
+      }
+
+      if (data) setSettings(data as CompanySettings);
+    }
+
+    fetchSettings();
+  }, []);
 
   const handleHomeClick = () => {
     setIsOpen(false);
@@ -55,7 +80,14 @@ export function Header() {
     <header className="sticky top-0 z-50 w-full border-b border-gray-100 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
         <button type="button" className="flex items-center" onClick={handleHomeClick}>
-          <Image src="/logo%20v2-06.png" alt="GL MEDICAL" width={140} height={48} className="object-contain h-10 w-auto" priority />
+          <Image
+            src={settings?.header_logo_url || settings?.logo_url || "/logo%20v2-06.png"}
+            alt="GL MEDICAL"
+            width={140}
+            height={48}
+            className="object-contain h-10 w-auto"
+            priority
+          />
         </button>
 
         {/* Desktop Nav */}
