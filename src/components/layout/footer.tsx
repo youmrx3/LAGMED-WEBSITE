@@ -45,7 +45,7 @@ export function Footer() {
           {/* Brand */}
           <div className="space-y-4">
             <Link href="/" className="flex items-center">
-              <Image src="/logo%20v2-11.png" alt="LAGMED" width={140} height={48} className="object-contain h-10 w-auto" />
+              <Image src="/logo%20v2-11.png" alt="GL MEDICAL" width={140} height={48} className="object-contain h-10 w-auto" />
             </Link>
             <p className="text-sm leading-relaxed text-navy-100">{t("footer.description")}</p>
           </div>
@@ -91,7 +91,7 @@ export function Footer() {
               </li>
               <li className="flex items-center gap-2 text-sm">
                 <Mail className="h-4 w-4 text-navy-200 shrink-0" />
-                {settings?.email || "contact@lagmed.dz"}
+                {settings?.email || "contact@glmedical.dz"}
               </li>
             </ul>
           </div>
@@ -142,7 +142,7 @@ export function Footer() {
         </div>
 
         <div className="mt-12 pt-8 border-t border-navy-500 text-center text-sm">
-          <p>&copy; {year} LAGMED. {t("footer.rights")}</p>
+          <p>&copy; {year} GL MEDICAL. {t("footer.rights")}</p>
         </div>
       </div>
     </footer>

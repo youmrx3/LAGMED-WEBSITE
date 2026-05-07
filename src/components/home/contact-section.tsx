@@ -77,7 +77,7 @@ export function ContactSection() {
               <Mail className="h-6 w-6 text-navy-600 shrink-0 mt-0.5" />
               <div>
                 <h3 className="font-semibold text-gray-900">{t("contact.email")}</h3>
-                <p className="text-gray-600 text-sm">{settings?.email || "contact@lagmed.dz"}</p>
+                <p className="text-gray-600 text-sm">{settings?.email || "contact@glmedical.dz"}</p>
               </div>
             </div>
           </motion.div>
@@ -97,7 +97,7 @@ export function ContactSection() {
               allowFullScreen={false}
               loading="lazy"
               referrerPolicy="no-referrer-when-downgrade"
-              title="LAGMED Location"
+              title="GL MEDICAL Location"
             />
           </motion.div>
         </div>

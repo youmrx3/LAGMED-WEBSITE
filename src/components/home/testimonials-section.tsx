@@ -300,7 +300,7 @@ export function TestimonialsSection() {
                     <Textarea
                       {...register("comment")}
                       rows={4}
-                      placeholder="Share your experience with LAGMED..."
+                      placeholder="Share your experience with GL MEDICAL..."
                     />
                     {errors.comment?.message && (
                       <p className="text-sm text-red-500 mt-1">{errors.comment.message}</p>
