@@ -19,6 +19,7 @@ import { ProductCard } from "@/components/products/product-card";
 import { useLocaleStore } from "@/lib/store";
 import { createClient } from "@/lib/supabase/client";
 import type { Product } from "@/lib/types";
+import { normalizeDatasheets } from "@/lib/datasheets";
 
 export default function ProductDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -105,6 +106,7 @@ export default function ProductDetailPage() {
   ) || [];
 
   const specs = product.specifications || {};
+  const datasheets = normalizeDatasheets(product.datasheets, product.datasheet_url);
 
   return (
     <div className="min-h-screen bg-white">
@@ -299,17 +301,22 @@ export default function ProductDetailPage() {
                   {t("product.request_quote")}
                 </Button>
               </Link>
-              {product.datasheet_url && (
-                <a
-                  href={product.datasheet_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <Button size="lg" variant="outline" className="gap-2 w-full sm:w-auto">
-                    <Download className="h-4 w-4" />
-                    {t("product.download_datasheet")}
-                  </Button>
-                </a>
+              {datasheets.length > 0 && (
+                <div className="flex flex-col gap-3 w-full sm:w-auto">
+                  {datasheets.map((datasheet, index) => (
+                    <a
+                      key={`${datasheet.url}-${index}`}
+                      href={datasheet.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <Button size="lg" variant="outline" className="gap-2 w-full sm:w-auto">
+                        <Download className="h-4 w-4" />
+                        {datasheet.name || t("product.download_datasheet")}
+                      </Button>
+                    </a>
+                  ))}
+                </div>
               )}
             </div>
           </motion.div>

@@ -26,9 +26,17 @@ export interface Product {
   is_available: boolean;
   certifications: string[];
   datasheet_url: string | null;
+  datasheets: ProductDatasheet[];
   created_at: string;
   category?: Category;
   product_images?: ProductImage[];
+}
+
+export interface ProductDatasheet {
+  name: string;
+  url: string;
+  type: string | null;
+  size: number | null;
 }
 
 export interface ProductImage {

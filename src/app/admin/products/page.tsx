@@ -11,6 +11,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { BulkActionBar } from "@/components/ui/bulk-action-bar";
 import { createClient } from "@/lib/supabase/client";
 import type { Product } from "@/lib/types";
+import { normalizeDatasheets } from "@/lib/datasheets";
 import { AnimatePresence, motion } from "framer-motion";
 import { useToastStore } from "@/lib/toast-store";
 
@@ -22,6 +23,7 @@ function ProductDetailModal({
   onClose: () => void;
 }) {
   const images = product.product_images || [];
+  const datasheets = normalizeDatasheets(product.datasheets, product.datasheet_url);
   const [selectedImage, setSelectedImage] = useState(0);
   const primaryImage =
     images.find((img) => img.is_primary)?.image_url || images[0]?.image_url;
@@ -192,16 +194,27 @@ function ProductDetailModal({
           )}
 
           {/* Datasheet */}
-          {product.datasheet_url && (
-            <a
-              href={product.datasheet_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 text-sm text-navy-600 hover:underline"
-            >
-              <FileText className="h-4 w-4" />
-              View Datasheet
-            </a>
+          {datasheets.length > 0 && (
+            <div>
+              <h4 className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-1.5">
+                <FileText className="h-4 w-4" />
+                Datasheets
+              </h4>
+              <div className="flex flex-col gap-2">
+                {datasheets.map((datasheet, index) => (
+                  <a
+                    key={`${datasheet.url}-${index}`}
+                    href={datasheet.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 text-sm text-navy-600 hover:underline"
+                  >
+                    <FileText className="h-4 w-4" />
+                    {datasheet.name}
+                  </a>
+                ))}
+              </div>
+            </div>
           )}
         </div>
 

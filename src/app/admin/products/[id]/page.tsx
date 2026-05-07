@@ -14,7 +14,8 @@ import { Select } from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
 import { createClient } from "@/lib/supabase/client";
 import { productSchema, type ProductFormData } from "@/lib/validations";
-import type { Category, ProductImage, Brand } from "@/lib/types";
+import type { Category, ProductImage, Brand, ProductDatasheet } from "@/lib/types";
+import { createDatasheetEntry, normalizeDatasheets } from "@/lib/datasheets";
 import { useToastStore } from "@/lib/toast-store";
 
 export default function AdminProductFormPage() {
@@ -26,7 +27,8 @@ export default function AdminProductFormPage() {
   const [brands, setBrands] = useState<Brand[]>([]);
   const [existingImages, setExistingImages] = useState<ProductImage[]>([]);
   const [newImages, setNewImages] = useState<File[]>([]);
-  const [datasheetFile, setDatasheetFile] = useState<File | null>(null);
+  const [existingDatasheets, setExistingDatasheets] = useState<ProductDatasheet[]>([]);
+  const [datasheetFiles, setDatasheetFiles] = useState<File[]>([]);
   const [specEntries, setSpecEntries] = useState<{ key: string; value: string }[]>([
     { key: "", value: "" },
   ]);
@@ -132,6 +134,8 @@ export default function AdminProductFormPage() {
           console.log("Setting existing images:", data.product_images.length);
           setExistingImages(data.product_images);
         }
+
+        setExistingDatasheets(normalizeDatasheets(data.datasheets, data.datasheet_url));
         
         console.log("Product loading complete");
       }
@@ -244,54 +248,67 @@ export default function AdminProductFormPage() {
     }
   };
 
-  const uploadDatasheet = async (productId: string): Promise<string | null> => {
-    if (!datasheetFile) {
-      return null;
+  const uploadDatasheets = async (): Promise<ProductDatasheet[]> => {
+    if (datasheetFiles.length === 0) {
+      return [];
     }
 
-    const formData = new FormData();
-    formData.append("file", datasheetFile);
-    formData.append("bucket", "datasheets");
+    const uploadedDatasheets: ProductDatasheet[] = [];
 
-    try {
-      console.log(`Uploading datasheet: ${datasheetFile.name}...`);
-      
-      const response = await fetch("/api/upload", {
-        method: "POST",
-        body: formData,
-      });
+    for (const file of datasheetFiles) {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("bucket", "datasheets");
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Upload failed: ${response.status} ${errorText}`);
+      try {
+        console.log(`Uploading datasheet: ${file.name}...`);
+
+        const response = await fetch("/api/upload", {
+          method: "POST",
+          body: formData,
+        });
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(`Upload failed: ${response.status} ${errorText}`);
+        }
+
+        const result = await response.json();
+
+        if (!result.success) {
+          throw new Error(result.error || "Upload failed");
+        }
+
+        if (!result.url) {
+          throw new Error("No URL returned from upload");
+        }
+
+        uploadedDatasheets.push(createDatasheetEntry(file, result.url));
+        console.log(`Datasheet uploaded successfully: ${result.url}`);
+      } catch (error) {
+        const errorMsg = error instanceof Error ? error.message : String(error);
+        console.error(`Datasheet upload error for ${file.name}: ${errorMsg}`);
+        addToast("warning", `Failed to upload ${file.name}: ${errorMsg}`);
+        throw error;
       }
-
-      const result = await response.json();
-      
-      if (!result.success) {
-        throw new Error(result.error || "Upload failed");
-      }
-
-      if (!result.url) {
-        throw new Error("No URL returned from upload");
-      }
-
-      console.log(`Datasheet uploaded successfully: ${result.url}`);
-      addToast("success", "Datasheet uploaded successfully!");
-      return result.url;
-    } catch (error) {
-      const errorMsg = error instanceof Error ? error.message : String(error);
-      console.error(`Datasheet upload error: ${errorMsg}`);
-      addToast("warning", `Datasheet upload failed (optional): ${errorMsg}`);
-      // Return null but don't throw - datasheet is optional
-      return null;
     }
+
+    if (uploadedDatasheets.length > 0) {
+      addToast("success", `${uploadedDatasheets.length} datasheet(s) uploaded successfully!`);
+      setDatasheetFiles([]);
+    }
+
+    return uploadedDatasheets;
   };
 
   const deleteImage = async (imageId: string) => {
     const supabase = createClient();
     await supabase.from("product_images").delete().eq("id", imageId);
     setExistingImages((prev) => prev.filter((img) => img.id !== imageId));
+  };
+
+  const removeExistingDatasheet = (urlToRemove: string) => {
+    setExistingDatasheets((prev) => prev.filter((datasheet) => datasheet.url !== urlToRemove));
   };
 
   const onSubmit = async (data: ProductFormData) => {
@@ -322,22 +339,19 @@ export default function AdminProductFormPage() {
       if (isEdit) {
         productId = params.id!; // Safe now due to check above
         console.log("Updating product ID:", productId);
+
+        const uploadedDatasheets = await uploadDatasheets();
+        const mergedDatasheets = [...existingDatasheets, ...uploadedDatasheets];
         
         const updateData: Record<string, unknown> = {
           ...data,
           specifications,
           certifications,
+          datasheets: mergedDatasheets,
+          datasheet_url: mergedDatasheets[0]?.url ?? null,
         };
 
         console.log("Update payload:", updateData);
-
-        // Upload datasheet first if present
-        if (datasheetFile) {
-          const datasheetUrl = await uploadDatasheet(productId);
-          if (datasheetUrl) {
-            updateData.datasheet_url = datasheetUrl;
-          }
-        }
 
         // Update product in database
         const { data: updateResult, error } = await supabase
@@ -387,17 +401,18 @@ export default function AdminProductFormPage() {
 
         productId = newProduct.id;
 
-        // Upload datasheet if present
-        if (datasheetFile) {
-          const datasheetUrl = await uploadDatasheet(productId);
-          if (datasheetUrl) {
-            const { error: updateError } = await supabase
-              .from("products")
-              .update({ datasheet_url: datasheetUrl })
-              .eq("id", productId);
-            if (updateError) {
-              throw new Error(`Failed to update datasheet: ${updateError.message}`);
-            }
+        const uploadedDatasheets = await uploadDatasheets();
+
+        if (uploadedDatasheets.length > 0) {
+          const { error: updateError } = await supabase
+            .from("products")
+            .update({
+              datasheets: uploadedDatasheets,
+              datasheet_url: uploadedDatasheets[0]?.url ?? null,
+            })
+            .eq("id", productId);
+          if (updateError) {
+            throw new Error(`Failed to update datasheets: ${updateError.message}`);
           }
         }
 
@@ -709,22 +724,80 @@ export default function AdminProductFormPage() {
           </CardContent>
         </Card>
 
-        {/* Datasheet */}
+        {/* Datasheets */}
         <Card>
           <CardContent className="space-y-4">
-            <h2 className="text-lg font-semibold">Datasheet (PDF)</h2>
-            <label className="flex items-center gap-2 px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-navy-400 transition-colors">
-              <Upload className="h-5 w-5 text-gray-400" />
-              <span className="text-sm text-gray-600">
-                {datasheetFile ? datasheetFile.name : "Upload PDF datasheet"}
-              </span>
-              <input
-                type="file"
-                accept=".pdf"
-                className="hidden"
-                onChange={(e) => setDatasheetFile(e.target.files?.[0] || null)}
-              />
-            </label>
+            <h2 className="text-lg font-semibold">Datasheets</h2>
+
+            {existingDatasheets.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {existingDatasheets.map((datasheet, index) => (
+                  <div
+                    key={`${datasheet.url}-${index}`}
+                    className="flex items-center gap-2 px-3 py-2 bg-gray-100 rounded-lg text-xs"
+                  >
+                    <a
+                      href={datasheet.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="hover:underline"
+                    >
+                      {datasheet.name}
+                    </a>
+                    <button
+                      type="button"
+                      onClick={() => removeExistingDatasheet(datasheet.url)}
+                      className="text-gray-500 hover:text-red-600"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <div>
+              <label className="flex items-center gap-2 px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-navy-400 transition-colors">
+                <Upload className="h-5 w-5 text-gray-400" />
+                <span className="text-sm text-gray-600">
+                  {datasheetFiles.length > 0
+                    ? `${datasheetFiles.length} file(s) selected`
+                    : "Upload one or more datasheets"}
+                </span>
+                <input
+                  type="file"
+                  multiple
+                  accept=".pdf,.doc,.docx,.png,.jpg,.jpeg,.webp,.tif,.tiff,.txt,.xls,.xlsx"
+                  className="hidden"
+                  onChange={(e) => {
+                    const files = Array.from(e.target.files || []);
+                    setDatasheetFiles((prev) => [...prev, ...files]);
+                  }}
+                />
+              </label>
+              {datasheetFiles.length > 0 && (
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {datasheetFiles.map((file, index) => (
+                    <div
+                      key={`${file.name}-${index}`}
+                      className="flex items-center gap-1 px-2 py-1 bg-blue-50 rounded text-xs"
+                    >
+                      {file.name}
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setDatasheetFiles((prev) =>
+                            prev.filter((_, fileIndex) => fileIndex !== index)
+                          )
+                        }
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </CardContent>
         </Card>
 
