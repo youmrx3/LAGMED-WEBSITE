@@ -8,6 +8,14 @@ import { useLocaleStore } from "@/lib/store";
 import { createClient } from "@/lib/supabase/client";
 import type { CompanySettings } from "@/lib/types";
 
+function normalizeExternalUrl(value?: string | null) {
+  if (!value) return undefined;
+  const trimmed = value.trim();
+  if (!trimmed) return undefined;
+  if (/^https?:\/\//i.test(trimmed)) return trimmed;
+  return `https://${trimmed}`;
+}
+
 export function Footer() {
   const { t } = useLocaleStore();
   const year = new Date().getFullYear();
@@ -16,6 +24,10 @@ export function Footer() {
     if (typeof window === "undefined") return null;
     return localStorage.getItem("footer_logo_url");
   });
+  const facebookUrl = normalizeExternalUrl(settings?.facebook_url);
+  const instagramUrl = normalizeExternalUrl(settings?.instagram_url);
+  const linkedinUrl = normalizeExternalUrl(settings?.linkedin_url);
+  const ouadknissUrl = normalizeExternalUrl(settings?.ouadkniss_url);
 
   useEffect(() => {
     const supabase = createClient();
@@ -122,36 +134,48 @@ export function Footer() {
             <h3 className="text-white font-semibold mb-4">{t("footer.follow_us")}</h3>
             <div className="flex gap-3 flex-wrap">
               <a
-                href={settings?.facebook_url || "#"}
-                target={settings?.facebook_url ? "_blank" : undefined}
-                rel={settings?.facebook_url ? "noopener noreferrer" : undefined}
+                href={facebookUrl}
+                target={facebookUrl ? "_blank" : undefined}
+                rel={facebookUrl ? "noopener noreferrer" : undefined}
+                onClick={(event) => {
+                  if (!facebookUrl) event.preventDefault();
+                }}
                 className="p-2 rounded-lg bg-navy-500 hover:bg-navy-400 transition-colors"
                 aria-label="Facebook"
               >
                 <Facebook className="h-5 w-5" />
               </a>
               <a
-                href={settings?.instagram_url || "#"}
-                target={settings?.instagram_url ? "_blank" : undefined}
-                rel={settings?.instagram_url ? "noopener noreferrer" : undefined}
+                href={instagramUrl}
+                target={instagramUrl ? "_blank" : undefined}
+                rel={instagramUrl ? "noopener noreferrer" : undefined}
+                onClick={(event) => {
+                  if (!instagramUrl) event.preventDefault();
+                }}
                 className="p-2 rounded-lg bg-navy-500 hover:bg-navy-400 transition-colors"
                 aria-label="Instagram"
               >
                 <Instagram className="h-5 w-5" />
               </a>
               <a
-                href={settings?.linkedin_url || "#"}
-                target={settings?.linkedin_url ? "_blank" : undefined}
-                rel={settings?.linkedin_url ? "noopener noreferrer" : undefined}
+                href={linkedinUrl}
+                target={linkedinUrl ? "_blank" : undefined}
+                rel={linkedinUrl ? "noopener noreferrer" : undefined}
+                onClick={(event) => {
+                  if (!linkedinUrl) event.preventDefault();
+                }}
                 className="p-2 rounded-lg bg-navy-500 hover:bg-navy-400 transition-colors"
                 aria-label="LinkedIn"
               >
                 <Linkedin className="h-5 w-5" />
               </a>
               <a
-                href={settings?.ouadkniss_url || "#"}
-                target={settings?.ouadkniss_url ? "_blank" : undefined}
-                rel={settings?.ouadkniss_url ? "noopener noreferrer" : undefined}
+                href={ouadknissUrl}
+                target={ouadknissUrl ? "_blank" : undefined}
+                rel={ouadknissUrl ? "noopener noreferrer" : undefined}
+                onClick={(event) => {
+                  if (!ouadknissUrl) event.preventDefault();
+                }}
                 className="p-2 rounded-lg bg-navy-500 hover:bg-navy-400 transition-colors flex items-center justify-center"
                 aria-label="Ouadkniss"
                 title="Shop on Ouadkniss"
