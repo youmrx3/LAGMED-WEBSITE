@@ -42,6 +42,10 @@ export default function AdminLayout({
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [user, setUser] = useState<string | null>(null);
   const [settings, setSettings] = useState<CompanySettings | null>(null);
+  const [logoUrl, setLogoUrl] = useState<string | null>(() => {
+    if (typeof window === "undefined") return null;
+    return localStorage.getItem("admin_logo_url");
+  });
 
   useEffect(() => {
     async function checkUser() {
@@ -72,7 +76,14 @@ export default function AdminLayout({
         return;
       }
 
-      if (data) setSettings(data as CompanySettings);
+      if (data) {
+        setSettings(data as CompanySettings);
+        const nextLogo = data.admin_logo_url || data.logo_url;
+        if (nextLogo) {
+          setLogoUrl(nextLogo);
+          localStorage.setItem("admin_logo_url", nextLogo);
+        }
+      }
     }
 
     fetchSettings();
@@ -107,13 +118,17 @@ export default function AdminLayout({
         }`}
       >
         <div className="flex items-center gap-2 p-6 border-b border-gray-100">
-          <Image
-            src={settings?.admin_logo_url || settings?.logo_url || "/logo%20v2-06.png"}
-            alt="GL MEDICAL"
-            width={120}
-            height={40}
-            className="object-contain h-8 w-auto"
-          />
+          {logoUrl ? (
+            <Image
+              src={logoUrl}
+              alt="GL MEDICAL"
+              width={120}
+              height={40}
+              className="object-contain h-8 w-auto"
+            />
+          ) : (
+            <div className="h-8 w-[120px]" aria-label="Logo placeholder" />
+          )}
           <span className="text-xs text-gray-400 ml-1">Admin</span>
           <button
             className="ml-auto lg:hidden"

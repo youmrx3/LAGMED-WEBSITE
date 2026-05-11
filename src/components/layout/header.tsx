@@ -18,6 +18,10 @@ export function Header() {
   const pathname = usePathname();
   const router = useRouter();
   const [settings, setSettings] = useState<CompanySettings | null>(null);
+  const [logoUrl, setLogoUrl] = useState<string | null>(() => {
+    if (typeof window === "undefined") return null;
+    return localStorage.getItem("header_logo_url");
+  });
 
   useEffect(() => {
     const supabase = createClient();
@@ -35,7 +39,14 @@ export function Header() {
         return;
       }
 
-      if (data) setSettings(data as CompanySettings);
+      if (data) {
+        setSettings(data as CompanySettings);
+        const nextLogo = data.header_logo_url || data.logo_url;
+        if (nextLogo) {
+          setLogoUrl(nextLogo);
+          localStorage.setItem("header_logo_url", nextLogo);
+        }
+      }
     }
 
     fetchSettings();
@@ -80,14 +91,18 @@ export function Header() {
     <header className="sticky top-0 z-50 w-full border-b border-gray-100 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
         <button type="button" className="flex items-center" onClick={handleHomeClick}>
-          <Image
-            src={settings?.header_logo_url || settings?.logo_url || "/logo%20v2-06.png"}
-            alt="GL MEDICAL"
-            width={140}
-            height={48}
-            className="object-contain h-10 w-auto"
-            priority
-          />
+          {logoUrl ? (
+            <Image
+              src={logoUrl}
+              alt="GL MEDICAL"
+              width={140}
+              height={48}
+              className="object-contain h-10 w-auto"
+              priority
+            />
+          ) : (
+            <div className="h-10 w-[140px]" aria-label="Logo placeholder" />
+          )}
         </button>
 
         {/* Desktop Nav */}

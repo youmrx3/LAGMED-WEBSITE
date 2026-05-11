@@ -12,6 +12,10 @@ export function Footer() {
   const { t } = useLocaleStore();
   const year = new Date().getFullYear();
   const [settings, setSettings] = useState<CompanySettings | null>(null);
+  const [logoUrl, setLogoUrl] = useState<string | null>(() => {
+    if (typeof window === "undefined") return null;
+    return localStorage.getItem("footer_logo_url");
+  });
 
   useEffect(() => {
     const supabase = createClient();
@@ -27,7 +31,14 @@ export function Footer() {
         console.warn("Failed to fetch footer settings:", error.message);
         return;
       }
-      if (data) setSettings(data);
+      if (data) {
+        setSettings(data);
+        const nextLogo = data.footer_logo_url || data.logo_url;
+        if (nextLogo) {
+          setLogoUrl(nextLogo);
+          localStorage.setItem("footer_logo_url", nextLogo);
+        }
+      }
     }
 
     fetchSettings();
@@ -45,13 +56,17 @@ export function Footer() {
           {/* Brand */}
           <div className="space-y-4">
             <Link href="/" className="flex items-center">
-              <Image
-                src={settings?.footer_logo_url || settings?.logo_url || "/logo%20v2-11.png"}
-                alt="GL MEDICAL"
-                width={140}
-                height={48}
-                className="object-contain h-10 w-auto"
-              />
+              {logoUrl ? (
+                <Image
+                  src={logoUrl}
+                  alt="GL MEDICAL"
+                  width={140}
+                  height={48}
+                  className="object-contain h-10 w-auto"
+                />
+              ) : (
+                <div className="h-10 w-[140px]" aria-label="Logo placeholder" />
+              )}
             </Link>
             <p className="text-sm leading-relaxed text-navy-100">{t("footer.description")}</p>
           </div>
