@@ -14,6 +14,9 @@ export const metadata: Metadata = {
     "medical devices",
     "LAGMED",
   ],
+  icons: {
+    icon: "/logov3.png",
+  },
   openGraph: {
     title: "LAGMED - Premium Medical Equipment",
     description: "Your trusted partner for quality healthcare solutions in Algeria.",
