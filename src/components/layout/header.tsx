@@ -18,13 +18,15 @@ export function Header() {
   const pathname = usePathname();
   const router = useRouter();
   const [settings, setSettings] = useState<CompanySettings | null>(null);
-  const [logoUrl, setLogoUrl] = useState<string | null>(() => {
-    if (typeof window === "undefined") return null;
-    return localStorage.getItem("header_logo_url");
-  });
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
 
   useEffect(() => {
     const supabase = createClient();
+
+    const cachedLogo = localStorage.getItem("header_logo_url");
+    if (cachedLogo) {
+      setLogoUrl(cachedLogo);
+    }
 
     async function fetchSettings() {
       const { data, error } = await supabase
